@@ -111,13 +111,19 @@
     <br><div class="panel-title">Local Time</div>
     <div id="localTime" class="time">--:--:--</div>
   </div>
-  
+
   <div class="panel">
-  <div class="panel-title">VHF Propagation</div>
+  <div class="panel-title">VHF Propagation (PSKReporter)</div>
+
+  <div style="margin-bottom:10px;">
+    <button onclick="setBand('50')">50 MHz</button>
+    <button onclick="setBand('144')">144 MHz</button>
+    <button onclick="setBand('222')">222 MHz</button>
+    <button onclick="setBand('432')">432 MHz</button>
+  </div>
+
   <div id="vhfmap" style="height: 500px; border-radius: 10px;"></div>
 </div>
-
-
 
 
 
@@ -151,9 +157,11 @@
 </script>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="vhfmap.js"></script>
+
 
 
 
