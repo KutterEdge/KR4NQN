@@ -1,5 +1,5 @@
 // -------------------------------
-// KR4NQN VHF Propagation Map
+// KR4NQN VHF Propagation Map (PSKReporter)
 // -------------------------------
 
 function initVHFMap() {
@@ -7,46 +7,51 @@ function initVHFMap() {
   const centerLng = -86.57;
   const zoom = 5;
 
-  // Create the map
   const map = L.map('vhfmap').setView([centerLat, centerLng], zoom);
 
-  // Base map layer
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  // -------------------------------
-  // Demo VHF spots (replace later)
-  // -------------------------------
-  const demoSpots = [
-    { lat: 34.5, lon: -86.8, snr: 20, desc: '144 MHz opening' },
-    { lat: 33.9, lon: -85.9, snr: 10, desc: 'Weak tropo' },
-    { lat: 35.2, lon: -87.1, snr: 30, desc: 'Strong path' }
-  ];
+  // Load PSKReporter VHF spots
+  fetch('/psk.php')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.reports) return;
 
-  fetch('/vhfspots.json')
-  .then(r => r.json())
-  .then(spots => {
-    spots.forEach(s => {
-      const color =
-        s.snr >= 25 ? '#ff0000' :
-        s.snr >= 15 ? '#ff9900' :
+      data.reports.forEach(rep => {
+        const lat = rep.rlat;
+        const lon = rep.rlon;
+
+        if (!lat || !lon) return;
+
+        const snr = rep.snr || 0;
+
+        const color =
+          snr >= 25 ? '#ff0000' :
+          snr >= 15 ? '#ff9900' :
                       '#00aaff';
 
-      L.circleMarker([s.lat, s.lon], {
-        radius: 8,
-        color,
-        fillColor: color,
-        fillOpacity: 0.7
-      })
-        .bindPopup(
-          `<b>${s.desc || 'VHF spot'}</b><br>SNR: ${s.snr} dB`
-        )
-        .addTo(map);
+        L.circleMarker([lat, lon], {
+          radius: 6,
+          color,
+          fillColor: color,
+          fillOpacity: 0.7
+        })
+          .bindPopup(
+            `<b>PSKReporter Spot</b><br>
+             SNR: ${snr} dB<br>
+             Band: ${rep.band}<br>
+             Mode: ${rep.mode}<br>
+             ${lat.toFixed(2)}, ${lon.toFixed(2)}`
+          )
+          .addTo(map);
+      });
+    })
+    .catch(err => {
+      console.log("PSKReporter error:", err);
     });
-  });
 }
 
-// Initialize when page loads
 document.addEventListener('DOMContentLoaded', initVHFMap);
