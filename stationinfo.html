@@ -111,12 +111,17 @@
     <br><div class="panel-title">Local Time</div>
     <div id="localTime" class="time">--:--:--</div>
   </div>
-
-  <!-- Day/Night Map -->
+  
   <div class="panel">
-  <div class="panel-title"></div>
-  <img src="img/Copilot_20260731_112813.png">
+  <div class="panel-title">VHF Propagation Map</div>
+  <iframe 
+    src="https://vhf.dxview.org/map?center=34.24,-86.57,5.0"
+    style="width:100%; height:600px; border:none; border-radius:10px;"
+    sandbox="allow-scripts allow-forms"
+  ></iframe>
 </div>
+
+
 
   <!-- Local Clock -->
   <div class="panel">
@@ -146,6 +151,46 @@
   updateTimes();
   setInterval(updateTimes, 1000);
 </script>
+
+<script>
+async function loadSolarData() {
+  const box = document.getElementById("solarData");
+
+  try {
+    const response = await fetch("https://vhf.dxview.org/map?center=34.24,-86.57,5.0");
+    const data = await response.json();
+
+    const s = data.solar;
+    const g = data.geomag;
+
+    box.innerHTML = `
+      <div style="font-size:1.3rem; margin-bottom:10px;">
+        <strong>SFI:</strong> ${s.sfi} &nbsp; | &nbsp;
+        <strong>Sunspots:</strong> ${s.sunspots}
+      </div>
+
+      <div style="font-size:1.3rem; margin-bottom:10px;">
+        <strong>A-index:</strong> ${g.aindex} &nbsp; | &nbsp;
+        <strong>K-index:</strong> ${g.kindex}
+      </div>
+
+      <div style="font-size:1.2rem; margin-bottom:10px;">
+        <strong>X-ray Flux:</strong> ${s.xray}
+      </div>
+
+      <div style="font-size:1.2rem;">
+        <strong>Conditions:</strong> ${g.conditions}
+      </div>
+    `;
+  } catch (err) {
+    box.innerHTML = "Error loading solar data.";
+  }
+}
+
+loadSolarData();
+setInterval(loadSolarData, 60000);
+</script>
+
 
 </body>
 </html>
