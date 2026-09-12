@@ -2,168 +2,155 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Station Dashboard</title>
-<meta name="description" content="KR4NQN — Amateur and GMRS radio operator based in Citrus County, Florida.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap"
-    rel="stylesheet">
-    
+<title>Kutter Edge Radio Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-  body {
-    margin: 0;
-    background: #14181A;
-    font-family: Arial, sans-serif;
-    color: #e6e6e6;
-  }
+    body {
+        background: #0d0d0d;
+        color: #e0e0e0;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
 
-  .header {
-    text-align: center;
-    padding: 25px 0 10px;
-    font-size: 1.6rem;
-    letter-spacing: 0.15em;
-    color: #66fcf1;
-  }
+    header {
+        padding: 20px;
+        text-align: center;
+        background: #111;
+        border-bottom: 2px solid #222;
+    }
 
+    h1 {
+        margin: 0;
+        font-size: 32px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
 
-  .callsign {
-    text-align: center;
-    font-size: 2.6rem;
-    font-weight: bold;
-    letter-spacing: 0.25em;
-    margin-bottom: 25px;
-  }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
 
-  .callsign span:nth-child(1) { color: #ff3b3b; }
-  .callsign span:nth-child(2) { color: #ffffff; }
-  .callsign span:nth-child(3) { color: #3b6cff; }
-  .callsign span:nth-child(4) { color: #ff3b3b; }
-  .callsign span:nth-child(5) { color: #ffffff; }
-  .callsign span:nth-child(6) { color: #3b6cff; }
+    .tile {
+        background: #1a1a1a;
+        padding: 50px;
+        border-radius: 1px;
+        border: 1px solid #333;
+        box-shadow: 0 0 10px #000;
+    }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
-    padding: 0 40px 40px;
-  }
+    .tile h2 {
+        margin-top: 0;
+        font-size: 20px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 10px;
+        text-transform: uppercase;
+    }
 
-  .panel {
-    background: #000000;
-    border: 2px solid #2bff00;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 0 25px rgb(4, 0, 253);
-  }
-
-  .panel-title {
-    font-size: 2rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: #ff0000;
-    margin-bottom: 15px;
-    text-align: center;
-  }
-
-  .time {
-    font-size: 5rem;
-    text-align: center;
-    margin: 10px 0;
-  }
-
-  iframe {
-    width: 100%;
-    height: 260px;
-    border: none;
-    border-radius: 10px;
-  }
-
-  .data {
-    font-size: 1.2rem;
-    text-align: center;
-    margin-top: 10px;
-  }
+    iframe {
+        width: 100%;
+        height: 300px;
+        border: none;
+        border-radius: 6px;
+    }
 </style>
 </head>
 
 <body>
-<div class="header">
-      
-      <nav>|
-        <a href="https://www.qrz.com/db/KR4NQN" target="_blank">QRZ</a>|
-        <a href="https://wireless2.fcc.gov/UlsApp/UlsSearch/results.jsp" target="_blank">FCC
-          license</a>|
-      </nav>
-    </div>
-<div class="header">Station Clock & Propagation Dashboard</div>
 
-<div class="callsign">
-  <span>K</span><span>R</span><span>4</span><span>N</span><span>Q</span><span>N</span>
-</div>
+<header>
+      <center><div class="brand">| KR4NQN |</div>
+      <nav>| <a href="https://www.qrz.com/db/KR4NQN" target="_blank">QRZ</a> |
+        <a href="https://wireless2.fcc.gov/UlsApp/UlsSearch/results.jsp" target="_blank">FCC
+          license</a> |
+      </nav></center>
+</header>
 
 <div class="grid">
 
-  <!-- UTC Clock -->
-  <div class="panel">
-    <div class="panel-title">UTC Time</div>
-    <div id="utcTime" class="time">--:--:--</div>
-    <br><div class="panel-title">Local Time</div>
-    <div id="localTime" class="time">--:--:--</div>
-  </div>
+    <!-- Solar Data -->
+    <div class="tile">
+        <h2>Solar & Space Weather</h2>
+        <iframe src="https://hamqsl.com/solar.html"></iframe>
+    </div>
 
-  <div class="panel">
-  <div class="panel-title">VHF Propagation (PSKReporter)</div>
+    <!-- HF Conditions -->
+    <div class="tile">
+        <h2>HF Band Conditions</h2>
+        <iframe src="https://hamqsl.com/solar2.html"></iframe>
+    </div>
 
-  <div style="margin-bottom:10px;">
-    <button onclick="setBand('50')">50 MHz</button>
-    <button onclick="setBand('144')">144 MHz</button>
-    <button onclick="setBand('222')">222 MHz</button>
-    <button onclick="setBand('432')">432 MHz</button>
-  </div>
-
-  <div id="vhfmap" style="height: 500px; border-radius: 10px;"></div>
+    <!--HF Band Analyzer-->
+    <div class="tile">
+    <h2>HF Band Analyzer</h2>
+    <div id="hf-status">Loading HF conditions...</div>
 </div>
 
+    <!-- Lightning Map -->
+    <div class="tile">
+        <h2>Lightning Activity</h2>
+        <iframe src="https://map.blitzortung.org"></iframe>
+    </div>
 
-
-  <!-- Local Clock -->
-  <div class="panel">
-    <center><img src="img/me1.png"></center>
-  </div>
-
+   
+</div>
 
 <script>
-  function pad(n) { return n.toString().padStart(2, '0'); }
+// HF Band Analyzer - Tactical Edition
+async function loadHFConditions() {
+    const target = document.getElementById("hf-status");
 
-  function updateTimes() {
-    const now = new Date();
+    try {
+        // HamQSL JSON endpoint
+        const response = await fetch("https://hamqsl.com/solarjson.php");
+        const data = await response.json();
 
-    // Local
-    const lh = pad(now.getHours());
-    const lm = pad(now.getMinutes());
-    const ls = pad(now.getSeconds());
-    document.getElementById('localTime').textContent = `${lh}:${lm}:${ls}`;
+        const solar = data.solar;
+        const hf = data.hfconditions;
 
-    // UTC
-    const uh = pad(now.getUTCHours());
-    const um = pad(now.getUTCMinutes());
-    const us = pad(now.getUTCSeconds());
-    document.getElementById('utcTime').textContent = `${uh}:${um}:${us}`;
-  }
+        // Extract values
+        const sn = solar.sunspots;
+        const kIndex = solar.kindex;
+        const xray = solar.xray;
+        const dayCond = hf.day;
+        const nightCond = hf.night;
 
-  updateTimes();
-  setInterval(updateTimes, 1000);
+        // Tactical condition scoring
+        function scoreBand(cond) {
+            if (cond.includes("Poor")) return "🔴 Poor";
+            if (cond.includes("Fair")) return "🟡 Fair";
+            if (cond.includes("Good")) return "🟢 Good";
+            return "⚪ Unknown";
+        }
+
+        target.innerHTML = `
+            <strong>Solar Data</strong><br>
+            Sunspots: ${sn}<br>
+            K-Index: ${kIndex}<br>
+            X-Ray: ${xray}<br><br>
+
+            <strong>HF Conditions</strong><br>
+            Daytime: ${scoreBand(dayCond)}<br>
+            Nighttime: ${scoreBand(nightCond)}<br><br>
+
+            <strong>Band Breakdown</strong><br>
+            80m: ${kIndex <= 3 ? "🟢 Good" : "🔴 Noisy"}<br>
+            40m: ${kIndex <= 4 ? "🟢 Good" : "🟡 Fair"}<br>
+            20m: ${sn >= 50 ? "🟢 Hot" : "🟡 Fair"}<br>
+            15m: ${sn >= 80 ? "🟢 Open" : "🔴 Closed"}<br>
+            10m: ${sn >= 100 ? "🟢 DX Open" : "🔴 Weak"}<br>
+        `;
+    } catch (err) {
+        target.innerHTML = "Error loading HF conditions.";
+    }
+}
+
+loadHFConditions();
 </script>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-
-<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="vhfmap.js"></script>
-
-
-
 
 
 </body>
