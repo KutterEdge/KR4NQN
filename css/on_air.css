@@ -1,0 +1,221 @@
+/* =====================================================
+   ON THE AIR MODULE - NAMESPACED STYLES
+   All selectors prefixed with #onTheAirContainer
+===================================================== */
+
+#onTheAirContainer {
+    background: #16213e;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 620px;
+    margin: 20px auto;
+    box-sizing: border-box;
+}
+
+#onTheAirContainer .ota-header {
+    background-color: #0f3460;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#onTheAirContainer .ota-header h2 {
+    color: #fff;
+    font-size: 18px;
+    margin: 0;
+}
+
+#onTheAirContainer .ota-count {
+    background-color: #e94560;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #fff;
+}
+
+#onTheAirContainer .ota-refresh-btn {
+    background-color: #4a9eff;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 10px;
+    transition: background 0.3s;
+}
+
+#onTheAirContainer .ota-refresh-btn:hover {
+    background-color: #357abd;
+}
+
+#onTheAirContainer .ota-tabs {
+    display: flex;
+    background-color: #0f3460;
+    border-top: 1px solid #1a1a2e;
+}
+
+#onTheAirContainer .ota-tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    background-color: #16213e;
+    border: none;
+    color: #888;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+#onTheAirContainer .ota-tab:hover {
+    background-color: #1a2847;
+}
+
+#onTheAirContainer .ota-tab.active {
+    background-color: #0f3460;
+    color: #4a9eff;
+    border-bottom: 3px solid #4a9eff;
+}
+
+#onTheAirContainer .ota-table-container {
+    max-height: 450px;
+    overflow-y: auto;
+    background-color: #1a1a2e;
+}
+
+#onTheAirContainer table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#onTheAirContainer thead {
+    background-color: #0f3460;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#onTheAirContainer th {
+    padding: 10px;
+    text-align: left;
+    font-size: 12px;
+    color: #4a9eff;
+    border-bottom: 2px solid #1a1a2e;
+}
+
+#onTheAirContainer td {
+    padding: 10px;
+    border-bottom: 1px solid #1a1a2e;
+    font-size: 13px;
+}
+
+#onTheAirContainer tbody tr:hover {
+    background-color: #1a2847;
+    cursor: pointer;
+}
+
+#onTheAirContainer .ota-callsign {
+    color: #4a9eff;
+    font-weight: bold;
+}
+
+#onTheAirContainer .ota-freq {
+    color: #ffd93d;
+}
+
+#onTheAirContainer .ota-mode {
+    color: #6bcf7f;
+}
+
+#onTheAirContainer .ota-park-link {
+    color: #ff6b9d;
+    text-decoration: none;
+}
+
+#onTheAirContainer .ota-park-link:hover {
+    text-decoration: underline;
+}
+
+#onTheAirContainer .ota-spotter {
+    color: #aaa;
+    font-size: 11px;
+}
+
+#onTheAirContainer .ota-receiver {
+    color: #9ab;
+    font-size: 11px;
+}
+
+#onTheAirContainer .ota-time {
+    color: #888;
+    font-size: 11px;
+}
+
+#onTheAirContainer .ota-snr {
+    color: #8cf;
+    font-size: 11px;
+}
+
+#onTheAirContainer .ota-comment {
+    color: #999;
+    font-size: 11px;
+}
+
+#onTheAirContainer .ota-loading {
+    padding: 40px;
+    text-align: center;
+    color: #888;
+}
+
+#onTheAirContainer .ota-spinner {
+    border: 3px solid #333;
+    border-top: 3px solid #4a9eff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: ota-spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes ota-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#onTheAirContainer .ota-error {
+    padding: 20px;
+    text-align: center;
+    color: #e94560;
+    background-color: #2a1a1e;
+    margin: 10px;
+    border-radius: 4px;
+}
+
+#onTheAirContainer .ota-warning {
+    padding: 15px;
+    background-color: #3a2a1e;
+    color: #ffb84d;
+    margin: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #ffb84d;
+}
+
+#onTheAirContainer .ota-success {
+    padding: 15px;
+    background-color: #1e3a2a;
+    color: #6bcf7f;
+    margin: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #6bcf7f;
+}
+
+#onTheAirContainer .ota-status {
+    padding: 10px 15px;
+    background-color: #1a1a2e;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+}
