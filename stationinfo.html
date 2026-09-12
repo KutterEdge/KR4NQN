@@ -108,27 +108,36 @@
 
   <!-- Day/Night Map -->
   <div class="panel">
-    <div class="panel-title">Day / Night Map</div>
-    <iframe src="https://www.timeanddate.com/worldclock/sunearth.html"></iframe>
-  </div>
+  <div class="panel-title">Day / Night Map</div>
+  <canvas id="dayNightMap" width="600" height="300" style="width:100%; border-radius:10px;"></canvas>
+</div>
 
   <!-- Solar Data -->
   <div class="panel">
-    <div class="panel-title">Solar & Geomagnetic Data</div>
-    <iframe src="https://www.hamqsl.com/solar.html"></iframe>
+  <div class="panel-title">Solar & Geomagnetic Data</div>
+  <div id="solarData" class="data">
+    Loading solar data...
   </div>
+</div>
+
 
   <!-- HF Band Conditions -->
   <div class="panel">
-    <div class="panel-title">HF Band Conditions</div>
-    <iframe src="https://www.hamqsl.com/solar2.html"></iframe>
+  <div class="panel-title">HF Band Conditions</div>
+  <div id="hfData" class="data">
+    Loading HF band conditions...
   </div>
+</div>
+
 
   <!-- NOAA Space Weather -->
   <div class="panel">
-    <div class="panel-title">NOAA Space Weather</div>
-    <iframe src="https://services.swpc.noaa.gov/text/solar-geophysical-event.txt"></iframe>
-  </div>
+  <div class="panel-title">NOAA Space Weather</div>
+  <pre id="noaaData" class="data" style="white-space: pre-wrap; text-align:left;">
+    Loading NOAA data...
+  </pre>
+</div>
+
 
 
 
@@ -157,6 +166,156 @@
   updateTimes();
   setInterval(updateTimes, 1000);
 </script>
+
+<script>
+function drawDayNightMap() {
+  const canvas = document.getElementById("dayNightMap");
+  const ctx = canvas.getContext("2d");
+
+  const img = new Image();
+  img.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/1024px-World_map_-_low_resolution.svg.png";
+
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const now = new Date();
+    const jd = now.getTime() / 86400000 + 2440587.5;
+    const n = jd - 2451545.0;
+
+    const L = (280.46 + 0.9856474 * n) % 360;
+    const g = (357.528 + 0.9856003 * n) % 360;
+    const lambda = L + 1.915 * Math.sin(g * Math.PI / 180) + 0.020 * Math.sin(2 * g * Math.PI / 180);
+
+    const epsilon = 23.439 - 0.0000004 * n;
+    const alpha = Math.atan2(Math.cos(epsilon * Math.PI / 180) * Math.sin(lambda * Math.PI / 180),
+                             Math.cos(lambda * Math.PI / 180)) * 180 / Math.PI;
+
+    const dec = Math.asin(Math.sin(epsilon * Math.PI / 180) * Math.sin(lambda * Math.PI / 180)) * 180 / Math.PI;
+
+    const gst = (18.697374558 + 24.06570982441908 * n) % 24;
+    const lon = (gst * 15 - alpha + 180) % 360 - 180;
+
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.beginPath();
+
+    for (let x = 0; x < canvas.width; x++) {
+      const mapLon = (x / canvas.width) * 360 - 180;
+      const angle = Math.abs(mapLon - lon);
+
+      if (angle > 90) {
+        ctx.fillRect(x, 0, 1, canvas.height);
+      }
+    }
+
+    ctx.closePath();
+  };
+}
+
+drawDayNightMap();
+setInterval(drawDayNightMap, 60000);
+</script>
+
+<script>
+async function loadSolarData() {
+  const box = document.getElementById("solarData");
+
+  try {
+    const response = await fetch("https://www.hamqsl.com/solarjson.php");
+    const data = await response.json();
+
+    const s = data.solar;
+    const g = data.geomag;
+
+    box.innerHTML = `
+      <div style="font-size:1.3rem; margin-bottom:10px;">
+        <strong>SFI:</strong> ${s.sfi} &nbsp; | &nbsp;
+        <strong>Sunspots:</strong> ${s.sunspots}
+      </div>
+
+      <div style="font-size:1.3rem; margin-bottom:10px;">
+        <strong>A-index:</strong> ${g.aindex} &nbsp; | &nbsp;
+        <strong>K-index:</strong> ${g.kindex}
+      </div>
+
+      <div style="font-size:1.2rem; margin-bottom:10px;">
+        <strong>X-ray Flux:</strong> ${s.xray}
+      </div>
+
+      <div style="font-size:1.2rem;">
+        <strong>Conditions:</strong> ${g.conditions}
+      </div>
+    `;
+  } catch (err) {
+    box.innerHTML = "Error loading solar data.";
+  }
+}
+
+loadSolarData();
+setInterval(loadSolarData, 60000);
+</script>
+
+<script>
+async function loadHFData() {
+  const box = document.getElementById("hfData");
+
+  try {
+    const response = await fetch("https://www.hamqsl.com/solarjson.php");
+    const data = await response.json();
+
+    const hf = data.hfconditions;
+
+    box.innerHTML = `
+      <div style="font-size:1.3rem; margin-bottom:10px;">
+        <strong>80m:</strong> ${hf.band80} &nbsp; | &nbsp;
+        <strong>40m:</strong> ${hf.band40}
+      </div>
+
+      <div style="font-size:1.3rem; margin-bottom:10px;">
+        <strong>30m:</strong> ${hf.band30} &nbsp; | &nbsp;
+        <strong>20m:</strong> ${hf.band20}
+      </div>
+
+      <div style="font-size:1.3rem; margin-bottom:10px;">
+        <strong>17m:</strong> ${hf.band17} &nbsp; | &nbsp;
+        <strong>15m:</strong> ${hf.band15}
+      </div>
+
+      <div style="font-size:1.3rem; margin-bottom:10px;">
+        <strong>12m:</strong> ${hf.band12} &nbsp; | &nbsp;
+        <strong>10m:</strong> ${hf.band10}
+      </div>
+
+      <div style="font-size:1.2rem;">
+        <strong>Day/Night:</strong> ${hf.daynight}
+      </div>
+    `;
+  } catch (err) {
+    box.innerHTML = "Error loading HF band conditions.";
+  }
+}
+
+loadHFData();
+setInterval(loadHFData, 60000);
+</script>
+
+<script>
+async function loadNOAAData() {
+  const box = document.getElementById("noaaData");
+
+  try {
+    const response = await fetch("https://services.swpc.noaa.gov/text/solar-geophysical-event.txt");
+    const text = await response.text();
+
+    box.textContent = text;
+  } catch (err) {
+    box.textContent = "Error loading NOAA space weather data.";
+  }
+}
+
+loadNOAAData();
+setInterval(loadNOAAData, 60000);
+</script>
+
 
 </body>
 </html>
