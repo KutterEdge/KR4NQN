@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>KR4NQN Radio Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --bg: #05060a;
+      --bg-alt: #0b0d14;
+      --accent: #00ff00;
+      --accent-soft: rgba(63, 184, 255, 0.15);
+      --card-bg: #101320;
+      --text-main: #f5f7ff;
+      --text-muted: #9aa0b8;
+      --border-subtle: #1b2030;
+      --danger: #ff4b6a;
+      --success: #4bff9a;
+      --warning: #ffc857;
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: radial-gradient(circle at top, #151a2b 0, #05060a 55%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Layout */
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, #0b0d14 0%, #151a2b 60%, #0b0d14 100%);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .brand-title {
+      font-size: 1.4rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .brand-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .callsign-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .callsign-pill span {
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 12px rgba(75, 255, 154, 0.7);
+    }
+
+    .status-line {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--text-muted);
+    }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr);
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .header-right {
+        align-items: flex-start;
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-subtle);
+      padding: 1rem 1.25rem;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .card-tag {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    /* Time panel */
+    .time-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .time-block {
+      flex: 1 1 180px;
+      padding: 0.75rem 0.9rem;
+      border-radius: 0.6rem;
+      border: 1px solid var(--border-subtle);
+      background: #0b0d14;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .time-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .time-value {
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    .time-date {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Mini metrics */
+    .metrics-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .metric-pill {
+      flex: 1 1 140px;
+      padding: 0.6rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: #0b0d14;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .metric-pill strong {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    /* Right column cards */
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.6rem;
+      border-radius: 0.5rem;
+      background: #0b0d14;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .list-label {
+      color: var(--text-muted);
+    }
+
+    .list-value {
+      font-weight: 500;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .badge-success {
+      color: var(--success);
+      border-color: var(--success);
+      background: rgba(75, 255, 154, 0.08);
+    }
+
+    .badge-warning {
+      color: var(--warning);
+      border-color: var(--warning);
+      background: rgba(255, 200, 87, 0.08);
+    }
+
+    .badge-danger {
+      color: var(--danger);
+      border-color: var(--danger);
+      background: rgba(255, 75, 106, 0.08);
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 0.75rem 1.5rem 1.25rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #0b0d14;
+      background: linear-gradient(to right, #05060a, #0b0d14);
+    }
+    
+    .tile {
+    background: #1a1a1a;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    box-shadow: 0 0 10px #000;
+}
+.tile h2 {
+    margin-top: 0;
+    font-size: 20px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    text-transform: uppercase;
+}
+
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <div class="brand-title">KR4NQN Dashboard</div>
+        <div class="brand-sub">Amateur Radio • Citrus County, FL • Live shack overview</div>
+        <div class="callsign-pill">
+          <span>KR4NQN</span>
+          <span>•</span>
+          <span>WSDX985</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="status-line">
+          <span class="status-dot"></span>
+          <span>Station status: Online</span>
+        </div>
+        <div class="status-line">
+          <span>Last refresh:</span>
+          <span id="last-refresh">—</span>
+        </div>
+        <nav><a href="index.html"> Home</a> | <a href="https://www.qrz.com/db/KR4NQN" target="_blank">QRZ</a> |
+        <a href="https://wireless2.fcc.gov/UlsApp/UlsSearch/results.jsp" target="_blank">FCC
+          license</a> |
+      </nav>
+      </div>
+    </header>
+
+    <main class="grid">
+      <!-- Left column: Time + metrics -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">Time & shack overview</div>
+          <div class="card-tag">Live</div>
+        </div>
+        <div class="card-body">
+          <div class="time-row">
+            <div class="time-block">
+              <div class="time-label">Local time</div>
+              <div class="time-value" id="local-time">--:--:--</div>
+              <div class="time-date" id="local-date">Loading…</div>
+            </div>
+            <div class="time-block">
+              <div class="time-label">UTC time</div>
+              <div class="time-value" id="utc-time">--:--:--</div>
+              <div class="time-date" id="utc-date">Loading…</div>
+            </div>
+          </div>
+
+          <div class="metrics-row">
+            <div class="metric-pill">
+              <span>HF bands</span>
+              <strong>Active</strong>
+            </div>
+            <div class="metric-pill">
+              <span>VHF/UHF</span>
+              <strong>Monitoring</strong>
+            </div>
+            <div class="metric-pill">
+              <span>GMRS</span>
+              <strong>Monitring</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right column: quick status cards -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">Station quick status</div>
+          <div class="card-tag">Snapshot</div>
+        </div>
+        <div class="card-body">
+          <div class="list">
+            <div class="list-item">
+              <span class="list-label">Primary HF rig</span>
+              <span class="list-value">Online</span>
+              <span class="badge badge-success">OK</span>
+            </div>
+            <div class="list-item">
+              <span class="list-label">Local repeater link</span>
+              <span class="list-value">Connected</span>
+              <span class="badge badge-success">Linked</span>
+            </div>
+            <div class="list-item">
+              <span class="list-label">Solar / geomagnetic</span>
+              <span class="list-value">Moderate</span>
+              <span class="badge badge-warning">Watch</span>
+            </div>
+            <div class="list-item">
+              <span class="list-label">Noise floor</span>
+              <span class="list-value">Low</span>
+              <span class="badge badge-success">Good</span>
+            </div>
+            <div class="list-item">
+              <span class="list-label">Alerts</span>
+              <span class="list-value">None</span>
+              <span class="badge badge-success">Clear</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>© <span id="year"></span> KR4NQN • Shack dashboard</span><div class="tile">
+    <h2>QRZ Callsign Lookup</h2>
+
+    <input id="qrzInput" type="text" placeholder="Enter Callsign (e.g., KR4NQN)" 
+           style="width:100%; padding:10px; margin-bottom:10px; background:#111; color:#eee; border:1px solid #333;">
+
+    <button onclick="lookupQRZ()" 
+            style="width:100%; padding:10px; background:#222; color:#eee; border:1px solid #444;">
+        Lookup
+    </button>
+
+    <div id="qrzResult" style="margin-top:15px; font-size:14px; line-height:1.4;"></div>
+</div>
+
+      <span>
+        <a href="https://kutteredgestudios.com" target="_blank"><img src="img/logo.png"></a>
+      </span>
+    </footer>
+  </div>
+
+  <script>
+    function pad(n) {
+      return n.toString().padStart(2, "0");
+    }
+
+    function formatDateTime(date, useUTC = false) {
+      const year = useUTC ? date.getUTCFullYear() : date.getFullYear();
+      const month = (useUTC ? date.getUTCMonth() : date.getMonth()) + 1;
+      const day = useUTC ? date.getUTCDate() : date.getDate();
+      const hours = useUTC ? date.getUTCHours() : date.getHours();
+      const minutes = useUTC ? date.getUTCMinutes() : date.getMinutes();
+      const seconds = useUTC ? date.getUTCSeconds() : date.getSeconds();
+
+      const time = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      const dateStr = `${year}-${pad(month)}-${pad(day)}`;
+      return { time, dateStr };
+    }
+
+    function updateClocks() {
+      const now = new Date();
+
+      const local = formatDateTime(now, false);
+      const utc = formatDateTime(now, true);
+
+      document.getElementById("local-time").textContent = local.time;
+      document.getElementById("local-date").textContent = local.dateStr;
+
+      document.getElementById("utc-time").textContent = utc.time;
+      document.getElementById("utc-date").textContent = utc.dateStr;
+
+      document.getElementById("last-refresh").textContent = now.toLocaleTimeString();
+    }
+
+    function init() {
+      updateClocks();
+      setInterval(updateClocks, 1000);
+
+      const yearEl = document.getElementById("year");
+      yearEl.textContent = new Date().getFullYear();
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+
+  <script>
+async function lookupQRZ() {
+    const callsign = document.getElementById("qrzInput").value.trim().toUpperCase();
+    const resultDiv = document.getElementById("qrzResult");
+
+    if (!callsign) {
+        resultDiv.innerHTML = "<span style='color:#f55;'>Enter a callsign.</span>";
+        return;
+    }
+
+    resultDiv.innerHTML = "Loading…";
+
+    try {
+        const response = await fetch(`https://cors.isomorphic-git.org/https://www.qrz.com/db/${callsign}`, {
+            headers: { "User-Agent": "Mozilla/5.0" }
+        });
+
+        const text = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, "text/html");
+
+        const block = doc.querySelector("#csdata");
+
+        if (!block) {
+            resultDiv.innerHTML = "<span style='color:#f55;'>No public data found.</span>";
+            return;
+        }
+
+        const lines = block.innerText.split("\n").map(l => l.trim()).filter(l => l);
+
+        resultDiv.innerHTML = `
+            <div style="background:#111; padding:10px; border:1px solid #333;">
+                <strong style="font-size:16px;">${callsign}</strong><br><br>
+                ${lines.map(l => `<div>${l}</div>`).join("")}
+            </div>
+        `;
+    } catch (err) {
+        resultDiv.innerHTML = "<span style='color:#f55;'>Error fetching data.</span>";
+    }
+}
+</script>
+
+</body>
+</html>
