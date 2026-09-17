@@ -102,12 +102,24 @@
       font-size: 0.85rem;
     }
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 12px rgba(75, 255, 154, 0.7);
+    .brand .dot {
+      width: 2px;
+      height: 2px;
+      border-radius: 100%;
+      box-shadow: 0 0 0 2px #00ff00;
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.05;
+      }
     }
 
     .status-line {
@@ -327,7 +339,7 @@
       </div>
       <div class="header-right">
         <div class="status-line">
-          <span class="status-dot"></span>
+          <div class="brand"><span class="dot" aria-hidden="true"></span></div>
           <span>Station status: Online</span>
         </div>
         <div class="status-line">
