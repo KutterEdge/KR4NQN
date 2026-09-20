@@ -1,559 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>KR4NQN Radio Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KR4NQN Shack Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent-color: #00ffcc;
+            --text-color: #ffffff;
+            --text-muted: #aaaaaa;
+            --border-color: #333333;
+        }
 
-  <style>
-    :root {
-      --bg: #05060a;
-      --bg-alt: #0b0d14;
-      --accent: #00ff00;
-      --accent-soft: rgba(63, 184, 255, 0.15);
-      --card-bg: #101320;
-      --text-main: #f5f7ff;
-      --text-muted: #9aa0b8;
-      --border-subtle: #1b2030;
-      --danger: #ff4b6a;
-      --success: #4bff9a;
-      --warning: #ffc857;
-      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
 
-    body {
-      font-family: var(--font-main);
-      background: radial-gradient(circle at top, #151a2b 0, #05060a 55%);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+        h1, h2, h3 {
+            margin: 0;
+        }
 
-    /* Layout */
-    .page {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
+        .callsign {
+            color: var(--accent-color);
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+        }
 
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 1rem 1.25rem;
-      border-radius: 0.75rem;
-      background: linear-gradient(135deg, #0b0d14 0%, #151a2b 60%, #0b0d14 100%);
-      border: 1px solid var(--border-subtle);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
-    }
+        .utc-clock {
+            font-size: 1.5rem;
+            font-family: monospace;
+            background: #000;
+            padding: 5px 15px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
 
-    .brand {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
 
-    .brand-title {
-      font-size: 1.4rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      font-weight: 600;
-    }
+        .dashboard-grid.large {
+            grid-template-columns: 2fr 1fr;
+        }
 
-    .brand-sub {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
+        @media (max-width: 900px) {
+            .dashboard-grid.large {
+                grid-template-columns: 1fr;
+            }
+        }
 
-    .callsign-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.35rem 0.7rem;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      border: 1px solid var(--accent);
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
 
-    .callsign-pill span {
-      font-weight: 600;
-      color: var(--accent);
-    }
+        .card h2 {
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
 
-    .header-right {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.35rem;
-      font-size: 0.85rem;
-    }
+        .widget-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 150px;
+            background: #151515;
+            border-radius: 4px;
+            overflow: hidden;
+        }
 
-    .brand .dot {
-      width: 2px;
-      height: 2px;
-      border-radius: 100%;
-      box-shadow: 0 0 0 2px #00ff00;
-      animation: pulse 2.4s ease-in-out infinite;
-    }
+        .logbook-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
 
-    @keyframes pulse {
+        .logbook-table th, .logbook-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: left;
+        }
 
-      0%,
-      100% {
-        opacity: 1;
-      }
+        .logbook-table th {
+            background-color: #252525;
+            color: var(--accent-color);
+        }
 
-      50% {
-        opacity: 0.05;
-      }
-    }
+        .logbook-table tr:nth-child(even) {
+            background-color: #1a1a1a;
+        }
 
-    .status-line {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      color: var(--text-muted);
-    }
+        .quick-links a {
+            display: block;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #252525;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
 
-    /* Grid */
-    .grid {
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr);
-      gap: 1.5rem;
-    }
-
-    @media (max-width: 900px) {
-      .grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .header-right {
-        align-items: flex-start;
-      }
-    }
-
-    /* Cards */
-    .card {
-      background: var(--card-bg);
-      border-radius: 0.75rem;
-      border: 1px solid var(--border-subtle);
-      padding: 1rem 1.25rem;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-
-    .card-title {
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--text-muted);
-    }
-
-    .card-tag {
-      font-size: 0.75rem;
-      padding: 0.2rem 0.55rem;
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      color: var(--accent);
-      background: var(--accent-soft);
-    }
-
-    .card-body {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    /* Time panel */
-    .time-row {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .time-block {
-      flex: 1 1 180px;
-      padding: 0.75rem 0.9rem;
-      border-radius: 0.6rem;
-      border: 1px solid var(--border-subtle);
-      background: #0b0d14;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-
-    .time-label {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--text-muted);
-    }
-
-    .time-value {
-      font-size: 1.4rem;
-      font-weight: 600;
-    }
-
-    .time-date {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    /* Mini metrics */
-    .metrics-row {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .metric-pill {
-      flex: 1 1 140px;
-      padding: 0.6rem 0.8rem;
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: #0b0d14;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .metric-pill strong {
-      color: var(--text-main);
-      font-weight: 500;
-    }
-
-    /* Right column cards */
-    .list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      font-size: 0.85rem;
-    }
-
-    .list-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.45rem 0.6rem;
-      border-radius: 0.5rem;
-      background: #0b0d14;
-      border: 1px solid var(--border-subtle);
-    }
-
-    .list-label {
-      color: var(--text-muted);
-    }
-
-    .list-value {
-      font-weight: 500;
-    }
-
-    .badge {
-      font-size: 0.7rem;
-      padding: 0.15rem 0.45rem;
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-    }
-
-    .badge-success {
-      color: var(--success);
-      border-color: var(--success);
-      background: rgba(75, 255, 154, 0.08);
-    }
-
-    .badge-warning {
-      color: var(--warning);
-      border-color: var(--warning);
-      background: rgba(255, 200, 87, 0.08);
-    }
-
-    .badge-danger {
-      color: var(--danger);
-      border-color: var(--danger);
-      background: rgba(255, 75, 106, 0.08);
-    }
-
-    footer {
-      margin-top: auto;
-      padding: 0.75rem 1.5rem 1.25rem;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid #0b0d14;
-      background: linear-gradient(to right, #05060a, #0b0d14);
-    }
-
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-  </style>
+        .quick-links a:hover {
+            background: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-  <div class="page">
+
     <header>
-      <div class="brand">
-        <div class="brand-title">KR4NQN Dashboard</div>
-        <div class="brand-sub">Amateur Radio • Citrus County, FL • Live shack overview</div>
-        <div class="callsign-pill">
-          <span>KR4NQN</span>
-          <span>•</span>
-          <span>WSDX985</span>
+        <div>
+            <div class="callsign">KR4NQN</div>
+            <div style="color: var(--text-muted);">Amateur Radio Shack Dashboard</div>
         </div>
-      </div>
-      <div class="header-right">
-        <div class="status-line">
-          <div class="brand"><span class="dot" aria-hidden="true"></span></div>
-          <span>Station status: Online</span>
-        </div>
-        <div class="status-line">
-          <span>Last refresh:</span>
-          <span id="last-refresh">—</span>
-        </div>
-        <nav><a href="index.html"> Home</a> | <a href="https://www.qrz.com/db/KR4NQN" target="_blank">QRZ</a> |
-        <a href="https://wireless2.fcc.gov/UlsApp/UlsSearch/results.jsp" target="_blank">FCC
-          license</a> |
-          <a href="https://citrusham.org" target="_blank">Citrus ARC</a>|
-      </nav>
-      </div>
+        <div class="utc-clock" id="utc-clock">00:00:00 UTC</div>
     </header>
 
-    <main class="grid">
-      <!-- Left column: Time + metrics -->
-      <section class="card">
-        <div class="card-header">
-          <div class="card-title">Time & shack overview</div>
-          <div class="card-tag">Live</div>
+    <!-- Top Row: Propagation and Solar Data Widgets -->
+    <div class="dashboard-grid">
+        <!-- Solar Banner Widget (HamQSL) -->
+        <div class="card">
+            <h2>Solar-Terrestrial Data</h2>
+            <div class="widget-container">
+                <a href="https://hamqsl.com" target="_blank">
+                    <img src="https://hamqsl.com" alt="Solar Data">
+                </a>
+            </div>
         </div>
-        <div class="card-body">
-          <div class="time-row">
-            <div class="time-block">
-              <div class="time-label">Local time</div>
-              <div class="time-value" id="local-time">--:--:--</div>
-              <div class="time-date" id="local-date">Loading…</div>
-            </div>
-            <div class="time-block">
-              <div class="time-label">UTC time</div>
-              <div class="time-value" id="utc-time">--:--:--</div>
-              <div class="time-date" id="utc-date">Loading…</div>
-            </div>
-          </div>
 
-          <div class="metrics-row">
-            <div class="metric-pill">
-              <span>HF bands</span>
-              <strong>Setting up System</strong>
+        <!-- HF Propagation Conditions -->
+        <div class="card">
+            <h2>HF Propagation (24h)</h2>
+            <div class="widget-container">
+                <a href="https://hamqsl.com" target="_blank">
+                    <img src="https://hamqsl.com" alt="Solar Propagation">
+                </a>
             </div>
-            <div class="metric-pill">
-              <span>VHF/UHF</span>
-              <strong>Monitoring</strong>
-            </div>
-            <div class="metric-pill">
-              <span>GMRS</span>
-              <strong>Monitring</strong>
-            </div>
-          </div>
         </div>
-      </section>
 
-      <!-- Right column: quick status cards -->
-      <section class="card">
-        <div class="card-header">
-          <div class="card-title">Station quick status</div>
-          <div class="card-tag">Snapshot</div>
-        </div>
-        <div class="card-body">
-          <div class="list">
-            <div class="list-item">
-              <span class="list-label">Primary HF rig</span>
-              <span class="list-value">Offline</span>
-              <span class="badge badge-success">Bulding</span>
+        <!-- Station Info & Quick Links -->
+        <div class="card">
+            <h2>Station Resources</h2>
+            <div class="quick-links">
+                <a href="https://qrz.com/db/KR4NQN" target="_blank">My QRZ.com Profile</a>
+                <a href="https://dxwatch.com" target="_blank">DX Watch Cluster</a>
+                <a href="index.html">Home</a>
+                <a href="https://citrusham.org" target="_blank">Citrus County Amatuer Radio Club</a>
             </div>
-            <div class="list-item">
-              <span class="list-label">Local repeater link</span>
-              <span class="list-value">Connected</span>
-              <span class="badge badge-success">Linked</span>
-            </div>
-          </div>
         </div>
-      </section>
-    </main>
+    </div>
 
-    <footer>
-      <span>© <span id="year"></span> KR4NQN • Shack dashboard</span><div class="tile">
+    <!-- Bottom Row: Logbook and Map --><div class="card">
+            <h2>Live QRZ Logbook & Profile (Auto-Updates)</h2>
+            <!-- Embedded QRZ Frame handles session authentication automatically -->
+            <iframe src="https://qrz.com" height="550px"></iframe>
+        </div>
 
-      <span>
-        <a href="https://kutteredgestudios.com" target="_blank"><img src="img/logo.png"></a>
-      </span>
-    </footer>
-  </div>
+        <!-- Greyline / Space Weather Map -->
+        <div class="card">
+            <h2>Real-time Greyline Map</h2>
+            <div class="widget-container">
+                <!-- Using an open-source real-time map iframe alternative -->
+                <iframe src="https://windy.com" 
+                        width="100%" 
+                        height="250px" 
+                        frameborder="0" 
+                        style="border: none; border-radius: 4px;">
+                </iframe>
+            </div>
+        </div>
+    </div>
 
- <script>
-    (function(){
-        // Try the structured JSON endpoint first; fall back to raw ADIF text if JSON is absent
-        fetch('logbook.json')
-            .then(res => {
-                if (!res.ok) throw new Error('JSON not available');
-                return res.json();
-            })
-            .then(data => {
-                if (data.error) {
-                    document.getElementById('logbook-body').innerHTML = `<tr><td colspan="7" style="color:red;">${escapeHtml(data.error)}</td></tr>`;
-                    return;
-                }
-
-                if (!data || data.length === 0) {
-                    document.getElementById('logbook-body').innerHTML = `<tr><td colspan="7">No logs found.</td></tr>`;
-                    return;
-                }
-
-                renderTable(data);
-            })
-            .catch(() => {
-                // Fallback: attempt to load raw ADIF text and parse client-side
-                fetch('logbook.txt')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error("Logbook file not found or empty.");
-                        }
-                        return response.text();
-                    })
-                    .then(adifText => {
-                        console.log("Raw ADIF loaded successfully. Parsing...");
-                        const qsos = parseADIF(adifText);
-                        console.log(`Parsed ${qsos.length} valid QSO records.`);
-                        renderTable(qsos);
-                    })
-                    .catch(error => {
-                        console.error("Error loading logs:", error);
-                        document.getElementById('logbook-body').innerHTML = `
-                            <tr><td colspan="7" style="color: red; font-weight: bold; text-align: center; padding: 20px;">
-                                Error loading logbook: ${escapeHtml(error.message)}
-                            </td></tr>
-                        `;
-                    });
-            });
-
-        // Robust ADIF parser that produces the same JSON shape as the backend
-        function parseADIF(text) {
-            const records = text.split(/<eor>|<EOR>/);
-            const qsoList = [];
-
-            records.forEach(record => {
-                if (!record || !record.trim()) return;
-
-                const getTagValue = (tag) => {
-                    const regex = new RegExp(`<${tag}:(\\d+)(:[a-zA-Z])?>`, 'i');
-                    const match = record.match(regex);
-                    if (!match) return '';
-
-                    const length = parseInt(match[1], 10);
-                    const startPos = match.index + match[0].length;
-                    return record.substr(startPos, length).trim();
-                };
-
-                const call = getTagValue('call');
-                if (!call) return; // skip non-QSO blocks
-
-                let qsoDate = getTagValue('qso_date');
-                if (qsoDate.length === 8) {
-                    qsoDate = `${qsoDate.slice(0,4)}-${qsoDate.slice(4,6)}-${qsoDate.slice(6,8)}`;
-                } else {
-                    qsoDate = 'Unknown Date';
-                }
-
-                let timeOn = getTagValue('time_on');
-                if (timeOn.length >= 4) {
-                    timeOn = `${timeOn.slice(0,2)}:${timeOn.slice(2,4)}`;
-                } else {
-                    timeOn = '';
-                }
-
-                const freq = getTagValue('freq');
-                const band = getTagValue('band') || (freq ? freq : '—');
-
-                qsoList.push({
-                    datetime: `${qsoDate} ${timeOn}`.trim(),
-                    callsign: call.toUpperCase(),
-                    band: (band || '—').toUpperCase(),
-                    freq: freq ? `${freq} MHz` : '—',
-                    mode: (getTagValue('mode') || '—').toUpperCase(),
-                    rst_sent: getTagValue('rst_sent') || '—',
-                    rst_rcvd: getTagValue('rst_rcvd') || '—'
-                });
-            });
-
-            return qsoList.sort((a, b) => b.datetime.localeCompare(a.datetime));
+    <script>
+        // Real-Time UTC Clock Function
+        function updateUTCClock() {
+            const now = new Date();
+            const utcString = now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+            document.getElementById('utc-clock').textContent = utcString.split(' ')[1] + ' UTC';
         }
-
-        // Render items safely into the HTML layout
-        function renderTable(qsos) {
-            const tbody = document.getElementById('logbook-body');
-            if (!qsos || qsos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No visible log records found.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = qsos.map(qso => `
-                <tr>
-                    <td><b>${escapeHtml(qso.datetime)}</b></td>
-                    <td><span style="font-family:monospace; font-weight:bold; background:#eaeef2; padding:3px 6px; border-radius:4px;">${escapeHtml(qso.callsign)}</span></td>
-                    <td>${escapeHtml(qso.band)}</td>
-                    <td>${escapeHtml(qso.freq)}</td>
-                    <td>${escapeHtml(qso.mode)}</td>
-                    <td>${escapeHtml(qso.rst_sent)}</td>
-                    <td>${escapeHtml(qso.rst_rcvd)}</td>
-                </tr>
-            `).join('');
-        }
-
-        // Protection helper against cross-site script parsing strings
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, "&amp;")
-                      .replace(/</g, "&lt;")
-                      .replace(/>/g, "&gt;")
-                      .replace(/\"/g, "&quot;")
-                      .replace(/'/g, "&#039;");
-        }
-    })();
-</script>
-
+        
+        setInterval(updateUTCClock, 1000);
+        updateUTCClock();
+    </script>
 </body>
 </html>
