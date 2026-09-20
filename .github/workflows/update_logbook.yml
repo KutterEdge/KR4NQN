@@ -28,14 +28,16 @@ jobs:
         QRZ_API_KEY: ${{ secrets.QRZ_API_KEY }}
       run: python fetch_qrz.py
 
+   # ... everything else stays exactly the same as before ...
     - name: Commit and push if logbook changed
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@://github.com"
-        git add logbook.txt
+        git add logbook.json
         if git diff --staged --quiet; then
           echo "No changes to commit."
         else
           git commit -m "Automated QRZ logbook update"
           git push
         fi
+
