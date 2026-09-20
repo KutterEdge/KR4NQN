@@ -28,18 +28,28 @@ jobs:
               exit(1)
               
           # Connect to QRZ API
-          url = 'https://qrz.com'
+          url = 'https://logbook.qrz.com/api'
           payload = urllib.parse.urlencode({'KEY': api_key, 'ACTION': 'FETCH'}).encode('utf-8')
           req = urllib.request.Request(url, data=payload, headers={'User-Agent': 'GH-Actions-Updater/1.0'})
           
           try:
               with urllib.request.urlopen(req) as res:
-                  adif_data = res.read().decode('utf-8', errors='ignore')
+                  raw_response = res.read().decode('utf-8', errors='ignore')
           except Exception as e:
               print(f'Failed to contact QRZ API: {e}')
               exit(1)
+          
+          # Parse QRZ string response format (RESULT=OK&ADIF=...)
+          parsed_response = urllib.parse.parse_qs(raw_response)
+          
+          if 'ADIF' not in parsed_response:
+              print('API responded successfully, but no ADIF text payload was found. Check your QRZ logbook details.')
+              print('Raw Response Snapshot:', raw_response[:200])
+              exit(0)
               
-          # Parse common ADIF tags
+          adif_data = parsed_response['ADIF'][0]
+              
+          # Parse standard ADIF fields split by date anchors
           records = adif_data.split('<qso_date')[1:]
           rows = ''
           for r in records:
@@ -48,16 +58,19 @@ jobs:
               mode_match = re.search(r'<mode:\d+>([^<]+)', r, re.I)
               rst_match = re.search(r'<rst_rcvd:\d+>([^<]+)', r, re.I)
               
-              call = call_match.group(1).upper() if call_match else ''
-              band = band_match.group(1) if band_match else ''
-              mode = mode_match.group(1) if mode_match else ''
-              rst = rst_match.group(1) if rst_match else ''
+              call = call_match.group(1).upper().strip() if call_match else ''
+              band = band_match.group(1).strip() if band_match else ''
+              mode = mode_match.group(1).strip() if mode_match else ''
+              rst = rst_match.group(1).strip() if rst_match else ''
               
               d_m = re.search(r'^:\d+>(\d{4})(\d{2})(\d{2})', r)
               date = f'{d_m.group(1)}-{d_m.group(2)}-{d_m.group(3)}' if d_m else '-'
               
               if call:
                   rows += f'<tr><td>{date}</td><td><b>{call}</b></td><td>{band}</td><td>{mode}</td><td>{rst}</td></tr>\n'
+          
+          if not rows:
+              rows = '<tr><td colspan=\"5\" style=\"text-align:center;\">No logged entries found in your QRZ export.</td></tr>'
           
           # Inject inside HTML template structure
           with open('index.html', 'r') as f:
@@ -70,6 +83,6 @@ jobs:
       - name: Push Updated Logbook Live
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@://github.com"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --quiet && git diff --staged --quiet || (git commit -m "📆 Daily QRZ Logbook Auto-Update [skip ci]" && git push)
