@@ -143,33 +143,8 @@
         <div class="utc-clock" id="utc-clock">00:00:00 UTC</div>
     </header>
 
-     <!-- Top Row: Environmental & Radio Resource Widgets -->
-    <div class="dashboard-grid">
-        
-        <!-- Solar Banner Widget (HamQSL Standard Web Layout) -->
-        <div class="card">
-            <h2>Solar-Terrestrial Data</h2>
-            <div class="widget-container">
-                <a href="https://www.hamqsl.com/solar.html" target="_blank">
-                    <!-- Standard web banner image format -->
-                    <img src="https://hamqsl.com" alt="Solar Data" style="max-width:100%; height:auto;">
-                </a>
-            </div>
-        </div>
-
-        <!-- HF Propagation Conditions (HamQSL Band Status Layout) -->
-        <div class="card">
-            <h2>HF Propagation (24h)</h2>
-            <div class="widget-container">
-                <a href="https://www.hamqsl.com/solar.html" target="_blank">
-                    <!-- Standard HF propagation band condition summary layout -->
-                    <img src="https://hamqsl.com" alt="Solar Propagation" style="max-width:100%; height:auto;">
-                </a>
-            </div>
-        </div>
-
         <!-- Station Info & Quick Links -->
-        <div class="card">
+        <center><div class="card">
             <h2>Station Resources</h2>
             <div class="quick-links">
                 <a href="https://qrz.com/db/KR4NQN" target="_blank">My QRZ.com Profile</a>
@@ -181,24 +156,18 @@
     </div>
 
     <!-- Bottom Row: Logbook and Map --><center>
-      <div class="card">
-            <h2>Live QRZ Logbook & Profile (Auto-Updates)</h2>
-            <!-- Embedded QRZ Frame handles session authentication automatically -->
-            <iframe src="https://qrz.com" height="500px" width="1920px"></iframe>
-        </div></center>
-
-        <!-- Real-time Greyline Map via DXPredictor -->
+      <!-- Live QRZ Embedded Portal (Firewall Compliant) -->
 <div class="card">
-    <h2>Real-time Conditions Map</h2>
-    <div class="widget-container">
-        <!-- Secure HTTPS live greyline and Maximum Usable Frequency map wrapper -->
-        <iframe src="https://dxpredictor.com" 
-                width="80%" 
-                height="1920x" 
-                style="border: none; border-radius: 4px; background: #151515;">
-        </iframe>
-    </div>
+    <h2>Live QRZ Logbook & Profile</h2>
+    <!-- This cleaner path bypasses the main layout frame restrictions -->
+    <iframe src="https://qrz.com" 
+            height="500px"
+            width="1000" 
+            style="border: none; border-radius: 4px; background: #ffffff;">
+    </iframe>
 </div>
+
+        
 
 
     <script>
