@@ -1,0 +1,65 @@
+name: Update QRZ Logbook Daily
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs at midnight UTC every single day
+  workflow_dispatch: # Allows you to press a button to manually force an update anytime
+
+permissions:
+  contents: write # Gives the script permission to commit the new logs into your repo
+
+jobs:
+  update-logbook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Fetch and Inject QRZ Logs
+        env:
+          QRZ_API_KEY: ${{ secrets.QRZ_API_KEY }}
+        run: |
+          python -c "
+          import urllib.request, urllib.parse, re, os
+          
+          api_key = os.environ.get('QRZ_API_KEY')
+          if not api_key:
+              print('Missing QRZ_API_KEY secret!')
+              exit(1)
+              
+          # Connect to QRZ API
+          url = 'https://qrz.com'
+          payload = urllib.parse.urlencode({'KEY': api_key, 'ACTION': 'FETCH'}).encode('utf-8')
+          req = urllib.request.Request(url, data=payload, headers={'User-Agent': 'GH-Actions-Updater/1.0'})
+          
+          with urllib.request.urlopen(req) as res:
+              adif_data = res.read().decode('utf-8', errors='ignore')
+              
+          # Parse common ADIF tags
+          records = adif_data.split('<qso_date')[1:]
+          rows = ''
+          for r in records:
+              call = (re.search(r'<call:\d+>([^<]+)', r, re.I) or [,''])[1].upper()
+              band = (re.search(r'<band:\d+>([^<]+)', r, re.I) or [,''])[1]
+              mode = (re.search(r'<mode:\d+>([^<]+)', r, re.I) or [,''])[1]
+              rst = (re.search(r'<rst_rcvd:\d+>([^<]+)', r, re.I) or [,''])[1]
+              d_m = re.search(r'^:\d+>(\d{4})(\d{2})(\d{2})', r)
+              date = f'{d_m.group(1)}-{d_m.group(2)}-{d_m.group(3)}' if d_m else '-'
+              
+              if call:
+                  rows += f'<tr><td>{date}</td><td><b>{call}</b></td><td>{band}</td><td>{mode}</td><td>{rst}</td></tr>\n'
+          
+          # Inject inside HTML template structure
+          with open('index.html', 'r') as f:
+              html = f.read()
+          updated = re.sub(r'(<tbody id=\"logTableBody\">).*?(</tbody>)', f'\\1\n{rows}\\2', html, flags=re.DOTALL)
+          with open('index.html', 'w') as f:
+              f.write(updated)
+          "
+
+      - name: Push Updated Logbook Live
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+          git add index.html
+          git diff --quiet && git diff --staged --quiet || (git commit -m "📆 Daily QRZ Logbook Auto-Update [skip ci]" && git push)
