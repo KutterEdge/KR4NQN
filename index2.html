@@ -425,38 +425,135 @@
   </div>
 
  <script>
-        // Directly fetch the pre-rendered JSON array
+    (function(){
+        // Try the structured JSON endpoint first; fall back to raw ADIF text if JSON is absent
         fetch('logbook.json')
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('JSON not available');
+                return res.json();
+            })
             .then(data => {
-                const tbody = document.getElementById('logbook-body');
-                
                 if (data.error) {
-                    tbody.innerHTML = `<tr><td colspan="7" style="color:red;">${data.error}</td></tr>`;
-                    return;
-                }
-                
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7">No logs found.</td></tr>`;
+                    document.getElementById('logbook-body').innerHTML = `<tr><td colspan="7" style="color:red;">${escapeHtml(data.error)}</td></tr>`;
                     return;
                 }
 
-                tbody.innerHTML = data.map(qso => `
-                    <tr>
-                        <td><b>${qso.datetime}</b></td>
-                        <td><span style="font-family:monospace; font-weight:bold; background:#eaeef2; padding:3px 6px; border-radius:4px;">${qso.callsign}</span></td>
-                        <td>${qso.band}</td>
-                        <td>${qso.freq}</td>
-                        <td>${qso.mode}</td>
-                        <td>${qso.rst_sent}</td>
-                        <td>${qso.rst_rcvd}</td>
-                    </tr>
-                `).join('');
+                if (!data || data.length === 0) {
+                    document.getElementById('logbook-body').innerHTML = `<tr><td colspan="7">No logs found.</td></tr>`;
+                    return;
+                }
+
+                renderTable(data);
             })
-            .catch(err => {
-                document.getElementById('logbook-body').innerHTML = `<tr><td colspan="7" style="color:red;">Failed to load JSON data.</td></tr>`;
+            .catch(() => {
+                // Fallback: attempt to load raw ADIF text and parse client-side
+                fetch('logbook.txt')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Logbook file not found or empty.");
+                        }
+                        return response.text();
+                    })
+                    .then(adifText => {
+                        console.log("Raw ADIF loaded successfully. Parsing...");
+                        const qsos = parseADIF(adifText);
+                        console.log(`Parsed ${qsos.length} valid QSO records.`);
+                        renderTable(qsos);
+                    })
+                    .catch(error => {
+                        console.error("Error loading logs:", error);
+                        document.getElementById('logbook-body').innerHTML = `
+                            <tr><td colspan="7" style="color: red; font-weight: bold; text-align: center; padding: 20px;">
+                                Error loading logbook: ${escapeHtml(error.message)}
+                            </td></tr>
+                        `;
+                    });
             });
-    </script>
+
+        // Robust ADIF parser that produces the same JSON shape as the backend
+        function parseADIF(text) {
+            const records = text.split(/<eor>|<EOR>/);
+            const qsoList = [];
+
+            records.forEach(record => {
+                if (!record || !record.trim()) return;
+
+                const getTagValue = (tag) => {
+                    const regex = new RegExp(`<${tag}:(\\d+)(:[a-zA-Z])?>`, 'i');
+                    const match = record.match(regex);
+                    if (!match) return '';
+
+                    const length = parseInt(match[1], 10);
+                    const startPos = match.index + match[0].length;
+                    return record.substr(startPos, length).trim();
+                };
+
+                const call = getTagValue('call');
+                if (!call) return; // skip non-QSO blocks
+
+                let qsoDate = getTagValue('qso_date');
+                if (qsoDate.length === 8) {
+                    qsoDate = `${qsoDate.slice(0,4)}-${qsoDate.slice(4,6)}-${qsoDate.slice(6,8)}`;
+                } else {
+                    qsoDate = 'Unknown Date';
+                }
+
+                let timeOn = getTagValue('time_on');
+                if (timeOn.length >= 4) {
+                    timeOn = `${timeOn.slice(0,2)}:${timeOn.slice(2,4)}`;
+                } else {
+                    timeOn = '';
+                }
+
+                const freq = getTagValue('freq');
+                const band = getTagValue('band') || (freq ? freq : '—');
+
+                qsoList.push({
+                    datetime: `${qsoDate} ${timeOn}`.trim(),
+                    callsign: call.toUpperCase(),
+                    band: (band || '—').toUpperCase(),
+                    freq: freq ? `${freq} MHz` : '—',
+                    mode: (getTagValue('mode') || '—').toUpperCase(),
+                    rst_sent: getTagValue('rst_sent') || '—',
+                    rst_rcvd: getTagValue('rst_rcvd') || '—'
+                });
+            });
+
+            return qsoList.sort((a, b) => b.datetime.localeCompare(a.datetime));
+        }
+
+        // Render items safely into the HTML layout
+        function renderTable(qsos) {
+            const tbody = document.getElementById('logbook-body');
+            if (!qsos || qsos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No visible log records found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = qsos.map(qso => `
+                <tr>
+                    <td><b>${escapeHtml(qso.datetime)}</b></td>
+                    <td><span style="font-family:monospace; font-weight:bold; background:#eaeef2; padding:3px 6px; border-radius:4px;">${escapeHtml(qso.callsign)}</span></td>
+                    <td>${escapeHtml(qso.band)}</td>
+                    <td>${escapeHtml(qso.freq)}</td>
+                    <td>${escapeHtml(qso.mode)}</td>
+                    <td>${escapeHtml(qso.rst_sent)}</td>
+                    <td>${escapeHtml(qso.rst_rcvd)}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Protection helper against cross-site script parsing strings
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/\"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
+    })();
+</script>
 
 </body>
 </html>
