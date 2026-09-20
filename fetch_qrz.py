@@ -1,32 +1,60 @@
 import os
 import requests
+import urllib.parse
 
 # 1. Grab the API key from GitHub Secrets
 API_KEY = os.environ.get("QRZ_API_KEY")
 if not API_KEY:
     with open("logbook.txt", "w") as f:
         f.write("ERROR: QRZ_API_KEY secret is not configured in GitHub.")
-    print("Error: QRZ_API_KEY secret not found.")
     exit(1)
 
-URL = "https://logbook.qrz.com/api"
+URL = "https://qrz.com"
 HEADERS = {"User-Agent": "GitHubPagesLogbookWidget/1.0"}
 
-# 2. Get the status directly
-payload = {"KEY": API_KEY, "ACTION": "STATUS"}
+print("Fetching logbook data from QRZ...")
+
+# 2. Use your API key directly to FETCH data
+fetch_payload = {
+    "KEY": API_KEY, 
+    "ACTION": "FETCH",
+    "OPTION": "ALL"
+}
 
 try:
-    response = requests.post(URL, data=payload, headers=HEADERS)
+    response = requests.post(URL, data=fetch_payload, headers=HEADERS)
     
-    # CRITICAL TEST: Force it to write the exact server response to logbook.txt
-    with open("logbook.txt", "w", encoding="utf-8") as f:
-        f.write(f"--- STEP 1: INITIAL QRZ AUTH RESPONSE ---\n")
-        f.write(f"HTTP Status Code: {response.status_code}\n\n")
-        f.write(response.text)
+    if response.status_code != 200:
+        with open("logbook.txt", "w") as f:
+            f.write(f"HTTP Error from QRZ: {response.status_code}")
+        exit(1)
+
+    # 3. Parse the URL-encoded response string
+    parsed_response = urllib.parse.parse_qs(response.text)
+    
+    # Extract values safely (parse_qs wraps values in lists)
+    result = parsed_response.get("RESULT", [""])[0]
+    adif_data = parsed_response.get("ADIF", [""])[0]
+    reason = parsed_response.get("REASON", [""])[0]
+
+    if result == "OK" and adif_data:
+        # Save the clean ADIF data to logbook.txt
+        with open("logbook.txt", "w", encoding="utf-8") as f:
+            f.write(adif_data.strip())
+        print(f"Success! Logbook updated with {len(adif_data)} characters.")
         
-    print(f"Wrote server output to logbook.txt (Length: {len(response.text)})")
+    elif result == "FAIL":
+        with open("logbook.txt", "w") as f:
+            f.write(f"QRZ API Error: {reason}")
+        print(f"QRZ Error: {reason}")
+        
+    else:
+        # Fallback debug in case the format varies
+        with open("logbook.txt", "w", encoding="utf-8") as f:
+            f.write(f"Unexpected Response Format.\nRaw Output:\n{response.text}")
+        print("Unexpected response structure.")
 
 except Exception as e:
     with open("logbook.txt", "w") as f:
-        f.write(f"Python script execution failed with error: {str(e)}")
+        f.write(f"Python script execution failed: {str(e)}")
     print(f"Execution error: {e}")
