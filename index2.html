@@ -613,50 +613,51 @@ async function lookupQRZ() {
 
         // 2. Custom lightweight parser for ADIF format strings
         function parseADIF(text) {
-            // Split records by the standard ADIF end-of-record marker
-            const records = text.split(/<eor>|<EOR>/);
-            const qsoList = [];
+    // Split the text block into single QSO records
+    const records = text.split(/<eor>|<EOR>/);
+    const qsoList = [];
 
-            records.forEach(record => {
-                if (!record.trim()) return;
+    records.forEach(record => {
+        if (!record.trim()) return;
 
-                // Function to extract individual tags like <call:5>W1AW
-                const getTagValue = (tag) => {
-                    const regex = new RegExp(`<${tag}:(\\d+)(:[a-zA-Z])?>([^<]*)`, 'i');
-                    const match = record.match(regex);
-                    return match ? match[3].trim() : '';
-                };
+        // Securely reads explicit tags like <CALL:6>KR4NQN
+        const getTagValue = (tag) => {
+            const regex = new RegExp(`<${tag}:(\\d+)>`, 'i');
+            const match = record.match(regex);
+            if (!match) return '';
+            
+            const startPos = match.index + match[0].length;
+            const length = parseInt(match[1], 10);
+            return record.substr(startPos, length).trim();
+        };
 
-                const call = getTagValue('call');
-                if (!call) return; // Skip metadata rows that lack a callsign
+        const call = getTagValue('call');
+        if (!call) return; // Skip if no callsign present
 
-                // Standardize dates (YYYYMMDD to YYYY-MM-DD)
-                let qsoDate = getTagValue('qso_date');
-                if (qsoDate.length === 8) {
-                    qsoDate = `${qsoDate.slice(0,4)}-${qsoDate.slice(4,6)}-${qsoDate.slice(6,8)}`;
-                }
-
-                // Standardize times (HHMM or HHMMSS to HH:MM)
-                let timeOn = getTagValue('time_on');
-                if (timeOn.length >= 4) {
-                    timeOn = `${timeOn.slice(0,2)}:${timeOn.slice(2,4)}`;
-                }
-
-                // Push record objects into our array
-                qsoList.push({
-                    datetime: `${qsoDate} ${timeOn}`,
-                    callsign: call.toUpperCase(),
-                    band: getTagValue('band').toUpperCase(),
-                    freq: getTagValue('freq'),
-                    mode: getTagValue('mode').toUpperCase(),
-                    rstSent: getTagValue('rst_sent'),
-                    rstRcvd: getTagValue('rst_rcvd')
-                });
-            });
-
-            // Sort newest contacts first
-            return qsoList.sort((a, b) => b.datetime.localeCompare(a.datetime));
+        let qsoDate = getTagValue('qso_date');
+        if (qsoDate.length === 8) {
+            qsoDate = `${qsoDate.slice(0,4)}-${qsoDate.slice(4,6)}-${qsoDate.slice(6,8)}`;
         }
+
+        let timeOn = getTagValue('time_on');
+        if (timeOn.length >= 4) {
+            timeOn = `${timeOn.slice(0,2)}:${timeOn.slice(2,4)}`;
+        }
+
+        qsoList.push({
+            datetime: `${qsoDate} ${timeOn}`,
+            callsign: call.toUpperCase(),
+            band: getTagValue('band').toUpperCase(),
+            freq: getTagValue('freq'),
+            mode: getTagValue('mode').toUpperCase(),
+            rstSent: getTagValue('rst_sent') || '59', // fallbacks if missing
+            rstRcvd: getTagValue('rst_rcvd') || '59'
+        });
+    });
+
+    // Newest logged contacts show up first
+    return qsoList.sort((a, b) => b.datetime.localeCompare(a.datetime));
+}
 
         // 3. Populate HTML rows safely
         function renderTable(qsos) {
