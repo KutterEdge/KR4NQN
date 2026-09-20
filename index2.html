@@ -143,24 +143,27 @@
         <div class="utc-clock" id="utc-clock">00:00:00 UTC</div>
     </header>
 
-    <!-- Top Row: Propagation and Solar Data Widgets -->
+     <!-- Top Row: Environmental & Radio Resource Widgets -->
     <div class="dashboard-grid">
-        <!-- Solar Banner Widget (HamQSL) -->
+        
+        <!-- Solar Banner Widget (HamQSL Standard Web Layout) -->
         <div class="card">
             <h2>Solar-Terrestrial Data</h2>
             <div class="widget-container">
-                <a href="https://hamqsl.com" target="_blank">
-                    <img src="https://hamqsl.com" alt="Solar Data">
+                <a href="https://www.hamqsl.com/solar.html" target="_blank">
+                    <!-- Standard web banner image format -->
+                    <img src="https://hamqsl.com" alt="Solar Data" style="max-width:100%; height:auto;">
                 </a>
             </div>
         </div>
 
-        <!-- HF Propagation Conditions -->
+        <!-- HF Propagation Conditions (HamQSL Band Status Layout) -->
         <div class="card">
             <h2>HF Propagation (24h)</h2>
             <div class="widget-container">
-                <a href="https://hamqsl.com" target="_blank">
-                    <img src="https://hamqsl.com" alt="Solar Propagation">
+                <a href="https://www.hamqsl.com/solar.html" target="_blank">
+                    <!-- Standard HF propagation band condition summary layout -->
+                    <img src="https://hamqsl.com" alt="Solar Propagation" style="max-width:100%; height:auto;">
                 </a>
             </div>
         </div>
@@ -177,26 +180,26 @@
         </div>
     </div>
 
-    <!-- Bottom Row: Logbook and Map --><div class="card">
+    <!-- Bottom Row: Logbook and Map --><center>
+      <div class="card">
             <h2>Live QRZ Logbook & Profile (Auto-Updates)</h2>
             <!-- Embedded QRZ Frame handles session authentication automatically -->
-            <iframe src="https://qrz.com" height="550px"></iframe>
-        </div>
+            <iframe src="https://qrz.com" height="500px" width="1920px"></iframe>
+        </div></center>
 
-        <!-- Greyline / Space Weather Map -->
-        <div class="card">
-            <h2>Real-time Greyline Map</h2>
-            <div class="widget-container">
-                <!-- Using an open-source real-time map iframe alternative -->
-                <iframe src="https://windy.com" 
-                        width="100%" 
-                        height="250px" 
-                        frameborder="0" 
-                        style="border: none; border-radius: 4px;">
-                </iframe>
-            </div>
-        </div>
+        <!-- Real-time Greyline Map via DXPredictor -->
+<div class="card">
+    <h2>Real-time Conditions Map</h2>
+    <div class="widget-container">
+        <!-- Secure HTTPS live greyline and Maximum Usable Frequency map wrapper -->
+        <iframe src="https://dxpredictor.com" 
+                width="80%" 
+                height="1920x" 
+                style="border: none; border-radius: 4px; background: #151515;">
+        </iframe>
     </div>
+</div>
+
 
     <script>
         // Real-Time UTC Clock Function
@@ -209,5 +212,34 @@
         setInterval(updateUTCClock, 1000);
         updateUTCClock();
     </script>
+
+    <script>
+    // Real-Time UTC Clock Function
+    function updateUTCClock() {
+        const now = new Date();
+        const utcString = now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+        document.getElementById('utc-clock').textContent = utcString;
+    }
+    
+    // Cache Buster: Appends a random number to force HamQSL to give fresh solar data
+    function refreshWidgets() {
+        const cacheBuster = Math.floor(Math.random() * 10000);
+        const images = document.querySelectorAll('.widget-container img');
+        
+        images.forEach(img => {
+            // Extracts the base URL and adds a unique query parameter
+            const baseUrl = img.src.split('?')[0];
+            img.src = baseUrl + '?v=' + cacheBuster;
+        });
+    }
+
+    // Run clock every second
+    setInterval(updateUTCClock, 1000);
+    updateUTCClock();
+
+    // Refresh images once when the page loads
+    window.onload = refreshWidgets;
+</script>
+
 </body>
 </html>
