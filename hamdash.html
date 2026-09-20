@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>KR4NQN Dashboard</title>
@@ -98,8 +99,8 @@
       border: 1px solid #222;
       border-radius: 6px;
       box-shadow:
-        inset 0 0 12px rgba(0,0,0,0.8),
-        0 0 4px rgba(0,0,0,0.6);
+        inset 0 0 12px rgba(0, 0, 0, 0.8),
+        0 0 4px rgba(0, 0, 0, 0.6);
     }
 
     .card-header {
@@ -232,27 +233,104 @@
       background: #f1c40f;
       color: #000;
     }
-
-
   </style>
 
-   <style>
-        :root { --bg: #1e1e2e; --surface: #252538; --text: #cdd6f4; --accent: #89b4fa; }
-        body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .card { background: var(--surface); padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .form-group { display: flex; flex-direction: column; margin-bottom: 15px; }
-        label { margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
-        input, select, button { padding: 10px; border-radius: 6px; border: 1px solid #45475a; background: #11111b; color: #fff; }
-        button { background: var(--accent); color: #11111b; font-weight: bold; cursor: pointer; border: none; }
-        button:hover { opacity: 0.9; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #45475a; }
-        th { background: #11111b; }
-        .status { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; display: none; }
-    </style>
+  <style>
+    :root {
+      --bg: #1e1e2e;
+      --surface: #252538;
+      --text: #cdd6f4;
+      --accent: #89b4fa;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--surface);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
+    }
+
+    label {
+      margin-bottom: 5px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    input,
+    select,
+    button {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #45475a;
+      background: #11111b;
+      color: #fff;
+    }
+
+    button {
+      background: var(--accent);
+      color: #11111b;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #45475a;
+    }
+
+    th {
+      background: #11111b;
+    }
+
+    .status {
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-weight: bold;
+      display: none;
+    }
+  </style>
 </head>
+
 <body>
   <header>
     <div class="brand">
@@ -270,10 +348,7 @@
         <span class="status-dot"></span>
         <span>Station status: Online</span>
       </div>
-      <div class="status-line">
-        <span>Last refresh:</span>
-        <span id="last-refresh">—</span>
-      </div>
+
       <div class="status-line">
         <span id="utcClock" class="clock-utc">--:--:-- UTC</span>
         <span>•</span>
@@ -288,134 +363,65 @@
   </header>
 
   <div class="container">
-        <h1>📻 QRZ Logbook Manager</h1>
-        
-        <!-- Logbook Display -->
-        <div class="card">
-            <h2>Recent Contacts</h2>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date/Time</th>
-                            <th>Callsign</th>
-                            <th>Band</th>
-                            <th>Mode</th>
-                            <th>RST</th>
-                        </tr>
-                    </thead><tbody id="logTableBody">
-                <!-- GitHub Actions will automatically insert your data rows here daily -->
-            </tbody>
-                </table>
-            </div>
-        </div>
+    <h1>📻 QRZ Logbook Manager</h1>
+
+    <!-- Logbook Display -->
+    <div class="card">
+      <h2>Recent Contacts</h2>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date/Time</th>
+              <th>Callsign</th>
+              <th>Band</th>
+              <th>Mode</th>
+              <th>Country</th>
+            </tr>
+          </thead>
+          <tbody id="logTableBody">
+            <tr>
+              <td>2026-09-20</td>
+              <td>PU3GAP</td>
+              <td>70cm</td>
+              <td>DMR</td>
+              <td>Brazil</td>
+            </tr>
+            <tr>
+              <td>2026-09-20</td>
+              <td>KE4KMD</td>
+              <td>70cm</td>
+              <td>DMR</td>
+              <td>United States</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Load saved settings on page load
-        document.getElementById('apiKey').value = localStorage.getItem('qrz_api_key') || '';
-        document.getElementById('userAgent').value = localStorage.getItem('qrz_user_agent') || 'GitHubPagesLogbookViewer/1.0';
+  <script>
+    // Run once when the page loads to set the "Last refresh" time
+    const now = new Date();
 
-        // Direct QRZ requests from GitHub Pages hit CORS blocks, so we route through an open proxy
-        const PROXY_URL = "https://corsproxy.io?"; 
-        const QRZ_API_URL = "https://qrz.com";
+    function updateClocks() {
+      const time = new Date();
 
-        function showStatus(msg, isError = false) {
-            const box = document.getElementById('statusBox');
-            box.style.display = 'block';
-            box.style.background = isError ? '#f38ba8' : '#a6e3a1';
-            box.style.color = '#11111b';
-            box.innerText = msg;
-        }
+      // 1. Update UTC Clock
+      const utcString = time.toISOString().slice(11, 19) + ' UTC';
+      document.getElementById('utcClock').innerText = utcString;
 
-        async function fetchLogbook() {
-            const key = document.getElementById('apiKey').value;
-            const ua = document.getElementById('userAgent').value;
-            if(!key) return showStatus("Please enter your QRZ API Key.", true);
+      // 2. Update Local Clock
+      const localString = time.toLocaleTimeString() + ' LOCAL';
+      document.getElementById('localClock').innerText = localString;
+    }
 
-            localStorage.setItem('qrz_api_key', key);
-            localStorage.setItem('qrz_user_agent', ua);
-            showStatus("Fetching data from QRZ...");
+    // Update the clocks immediately, then refresh them every 1 second (1000ms)
+    updateClocks();
+    setInterval(updateClocks, 1000);
+  </script>
 
-            try {
-                // QRZ expects an ADIF or XML payload via POST even for fetches
-                const response = await fetch(`${PROXY_URL}${encodeURIComponent(QRZ_API_URL)}`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'User-Agent': ua
-                    },
-                    body: `KEY=${key}&ACTION=FETCH&STATUS=1`
-                });
-                
-                const text = await response.text();
-                // Note: QRZ responds in ADIF file format text. Parse it here:
-                parseAndDisplayADIF(text);
-                showStatus("Logbook updated successfully!");
-            } catch (err) {
-                showStatus("Network Error. Check your API key or CORS proxy.", true);
-                console.error(err);
-            }
-        }
-
-        function parseAndDisplayADIF(adifText) {
-            const tbody = document.getElementById('logTableBody');
-            if (!adifText.includes('<call')) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#f38ba8;">No records found or invalid API key configuration.</td></tr>`;
-                return;
-            }
-            
-            // Simple regex parser to extract common amateur radio fields from ADIF string
-            const records = adifText.split(/<qso_date/i).slice(1);
-            tbody.innerHTML = '';
-            
-            records.forEach(rec => {
-                const call = (rec.match(/<call:\d+>([^<]+)/i) || [,""])[1];
-                const band = (rec.match(/<band:\d+>([^<]+)/i) || [,""])[1];
-                const mode = (rec.match(/<mode:\d+>([^<]+)/i) || [,""])[1];
-                const rst = (rec.match(/<rst_sent:\d+>([^<]+)/i) || [,""])[1];
-                const date = (rec.match(/^:\d+>(\d{4})(\d{2})(\d{2})/i) || [,"","",""])[1] + "-" + 
-                             (rec.match(/^:\d+>(\d{4})(\d{2})(\d{2})/i) || [,"","",""])[2] + "-" + 
-                             (rec.match(/^:\d+>(\d{4})(\d{2})(\d{2})/i) || [,"","",""])[3];
-
-                if(call) {
-                    tbody.innerHTML += `<tr><td>${date}</td><td>${call.toUpperCase()}</td><td>${band}</td><td>${mode}</td><td>${rst}</td></tr>`;
-                }
-            });
-        }
-
-        async function submitQSO(e) {
-            e.preventDefault();
-            const key = document.getElementById('apiKey').value;
-            const ua = document.getElementById('userAgent').value;
-            if(!key) return showStatus("Please set your API key first.", true);
-
-            const call = document.getElementById('call').value;
-            const band = document.getElementById('band').value;
-            const mode = document.getElementById('mode').value;
-            const rst = document.getElementById('rst').value;
-
-            // Format data into standard ADIF structure
-            const adifData = `<CALL:${call.length}>${call}<BAND:${band.length}>${band}<MODE:${mode.length}>${mode}<RST_SENT:${rst.length}>${rst}<EOR>`;
-            showStatus("Submitting QSO to QRZ...");
-
-            try {
-                const response = await fetch(`${PROXY_URL}${encodeURIComponent(QRZ_API_URL)}`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'User-Agent': ua
-                    },
-                    body: `KEY=${key}&ACTION=INSERT&ADIF=${encodeURIComponent(adifData)}`
-                });
-                const resText = await response.text();
-                showStatus("QSO Sent! Response: " + resText.split('\n')[0]);
-                fetchLogbook(); // Refresh list
-            } catch(err) {
-                showStatus("Failed to submit QSO.", true);
-            }
-        }
-    </script>
 
 </body>
+
 </html>
