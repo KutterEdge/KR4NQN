@@ -234,32 +234,24 @@
     }
 
 
-    #logbook-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #111;
-  color: #eee;
-  font-family: 'Consolas', monospace;
-}
-
-#logbook-table th {
-  background: #222;
-  padding: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  border-bottom: 2px solid #444;
-}
-
-#logbook-table td {
-  padding: 8px;
-  border-bottom: 1px solid #333;
-}
-
-#logbook-table tr:hover {
-  background: #1a1a1a;
-}
-
   </style>
+
+   <style>
+        :root { --bg: #1e1e2e; --surface: #252538; --text: #cdd6f4; --accent: #89b4fa; }
+        body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: var(--surface); padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 15px; }
+        label { margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        input, select, button { padding: 10px; border-radius: 6px; border: 1px solid #45475a; background: #11111b; color: #fff; }
+        button { background: var(--accent); color: #11111b; font-weight: bold; cursor: pointer; border: none; }
+        button:hover { opacity: 0.9; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #45475a; }
+        th { background: #11111b; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; display: none; }
+    </style>
 </head>
 <body>
   <header>
@@ -295,69 +287,135 @@
     </div>
   </header>
 
-<table id="logbook-table">
-  <thead>
-    <tr>
-      <th>Callsign</th>
-      <th>Date/Time</th>
-      <th>Band</th>
-      <th>Mode</th>
-    </tr>
-  </thead>
-  <tbody id="logbook-body"></tbody>
-</table>
+  <div class="container">
+        <h1>📻 QRZ Logbook Manager</h1>
+        
+        <!-- Logbook Display -->
+        <div class="card">
+            <h2>Recent Contacts</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Callsign</th>
+                            <th>Band</th>
+                            <th>Mode</th>
+                            <th>RST</th>
+                        </tr>
+                    </thead><tbody id="logTableBody">
+                <!-- GitHub Actions will automatically insert your data rows here daily -->
+            </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-  <script>
-    const WORKER_URL = "https://logbook.kutteredgestudios.workers.dev/"; // ← replace with your Worker URL
+    <script>
+        // Load saved settings on page load
+        document.getElementById('apiKey').value = localStorage.getItem('qrz_api_key') || '';
+        document.getElementById('userAgent').value = localStorage.getItem('qrz_user_agent') || 'GitHubPagesLogbookViewer/1.0';
 
-    async function loadLogbook() {
-      const statusEl = document.getElementById("status");
-      const tbody = document.getElementById("logbook-body");
+        // Direct QRZ requests from GitHub Pages hit CORS blocks, so we route through an open proxy
+        const PROXY_URL = "https://corsproxy.io?"; 
+        const QRZ_API_URL = "https://qrz.com";
 
-      try {
-        statusEl.textContent = "Loading logbook…";
-
-        const response = await fetch(WORKER_URL);
-        if (!response.ok) {
-          throw new Error("Worker responded with status " + response.status);
+        function showStatus(msg, isError = false) {
+            const box = document.getElementById('statusBox');
+            box.style.display = 'block';
+            box.style.background = isError ? '#f38ba8' : '#a6e3a1';
+            box.style.color = '#11111b';
+            box.innerText = msg;
         }
 
-        const qsos = await response.json();
-        tbody.innerHTML = "";
+        async function fetchLogbook() {
+            const key = document.getElementById('apiKey').value;
+            const ua = document.getElementById('userAgent').value;
+            if(!key) return showStatus("Please enter your QRZ API Key.", true);
 
-        if (!qsos || qsos.length === 0) {
-          statusEl.textContent = "No QSOs found in QRZ logbook.";
-          return;
+            localStorage.setItem('qrz_api_key', key);
+            localStorage.setItem('qrz_user_agent', ua);
+            showStatus("Fetching data from QRZ...");
+
+            try {
+                // QRZ expects an ADIF or XML payload via POST even for fetches
+                const response = await fetch(`${PROXY_URL}${encodeURIComponent(QRZ_API_URL)}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'User-Agent': ua
+                    },
+                    body: `KEY=${key}&ACTION=FETCH&STATUS=1`
+                });
+                
+                const text = await response.text();
+                // Note: QRZ responds in ADIF file format text. Parse it here:
+                parseAndDisplayADIF(text);
+                showStatus("Logbook updated successfully!");
+            } catch (err) {
+                showStatus("Network Error. Check your API key or CORS proxy.", true);
+                console.error(err);
+            }
         }
 
-        qsos.forEach(qso => {
-          const row = document.createElement("tr");
+        function parseAndDisplayADIF(adifText) {
+            const tbody = document.getElementById('logTableBody');
+            if (!adifText.includes('<call')) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#f38ba8;">No records found or invalid API key configuration.</td></tr>`;
+                return;
+            }
+            
+            // Simple regex parser to extract common amateur radio fields from ADIF string
+            const records = adifText.split(/<qso_date/i).slice(1);
+            tbody.innerHTML = '';
+            
+            records.forEach(rec => {
+                const call = (rec.match(/<call:\d+>([^<]+)/i) || [,""])[1];
+                const band = (rec.match(/<band:\d+>([^<]+)/i) || [,""])[1];
+                const mode = (rec.match(/<mode:\d+>([^<]+)/i) || [,""])[1];
+                const rst = (rec.match(/<rst_sent:\d+>([^<]+)/i) || [,""])[1];
+                const date = (rec.match(/^:\d+>(\d{4})(\d{2})(\d{2})/i) || [,"","",""])[1] + "-" + 
+                             (rec.match(/^:\d+>(\d{4})(\d{2})(\d{2})/i) || [,"","",""])[2] + "-" + 
+                             (rec.match(/^:\d+>(\d{4})(\d{2})(\d{2})/i) || [,"","",""])[3];
 
-          const callsign = qso.callsign || "";
-          const datetime = qso.datetime || "";
-          const band = qso.band || "";
-          const mode = qso.mode || "";
+                if(call) {
+                    tbody.innerHTML += `<tr><td>${date}</td><td>${call.toUpperCase()}</td><td>${band}</td><td>${mode}</td><td>${rst}</td></tr>`;
+                }
+            });
+        }
 
-          row.innerHTML = `
-            <td>${callsign}</td>
-            <td>${datetime}</td>
-            <td>${band}</td>
-            <td>${mode}</td>
-          `;
+        async function submitQSO(e) {
+            e.preventDefault();
+            const key = document.getElementById('apiKey').value;
+            const ua = document.getElementById('userAgent').value;
+            if(!key) return showStatus("Please set your API key first.", true);
 
-          tbody.appendChild(row);
-        });
+            const call = document.getElementById('call').value;
+            const band = document.getElementById('band').value;
+            const mode = document.getElementById('mode').value;
+            const rst = document.getElementById('rst').value;
 
-        statusEl.textContent = `Loaded ${qsos.length} QSOs from QRZ logbook.`;
-        statusEl.classList.remove("error");
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = "Error loading logbook. Check Worker URL and API key.";
-        statusEl.classList.add("error");
-      }
-    }
+            // Format data into standard ADIF structure
+            const adifData = `<CALL:${call.length}>${call}<BAND:${band.length}>${band}<MODE:${mode.length}>${mode}<RST_SENT:${rst.length}>${rst}<EOR>`;
+            showStatus("Submitting QSO to QRZ...");
 
-    loadLogbook();
-  
+            try {
+                const response = await fetch(`${PROXY_URL}${encodeURIComponent(QRZ_API_URL)}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'User-Agent': ua
+                    },
+                    body: `KEY=${key}&ACTION=INSERT&ADIF=${encodeURIComponent(adifData)}`
+                });
+                const resText = await response.text();
+                showStatus("QSO Sent! Response: " + resText.split('\n')[0]);
+                fetchLogbook(); // Refresh list
+            } catch(err) {
+                showStatus("Failed to submit QSO.", true);
+            }
+        }
+    </script>
+
 </body>
 </html>
