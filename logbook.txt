@@ -1,4 +1,102 @@
---- STEP 1: INITIAL QRZ AUTH RESPONSE ---
-HTTP Status Code: 200
+Unexpected data envelope format.
+Raw Data:
+COUNT=2&RESULT=OK&ADIF=&lt;qrzcom_qso_download_date:8&gt;20260920
+&lt;my_name:11&gt;Keith Utter
+&lt;my_itu_zone:1&gt;8
+&lt;qth:10&gt;Walterboro
+&lt;my_city:13&gt;Beverly Hills
+&lt;qsl_via:18&gt;QSL Cards, DigIQSL
+&lt;state:2&gt;SC
+&lt;qrzcom_qso_upload_status:1&gt;Y
+&lt;station_callsign:6&gt;KR4NQN
+&lt;cont:2&gt;NA
+&lt;call:6&gt;KE4KMD
+&lt;app_qrzlog_logid:10&gt;1503933508
+&lt;lat:11&gt;N033 03.572
+&lt;app_qrzlog_qsldate:8&gt;20260919
+&lt;lotw_qsl_rcvd:1&gt;N
+&lt;qsl_sent:1&gt;N
+&lt;country:13&gt;United States
+&lt;name:15&gt;MARK E CARAGHER
+&lt;qrzcom_qso_download_status:1&gt;Y
+&lt;eqsl_qsl_rcvd:1&gt;N
+&lt;my_cq_zone:1&gt;5
+&lt;ituz:1&gt;8
+&lt;my_country:13&gt;United States
+&lt;my_cnty:9&gt;FL,Citrus
+&lt;time_off:4&gt;2100
+&lt;band:4&gt;70cm
+&lt;my_lat:11&gt;N028 53.748
+&lt;qrzcom_qso_upload_date:8&gt;20260919
+&lt;qsl_rcvd:1&gt;N
+&lt;freq:3&gt;420
+&lt;eqsl_qsl_sent:1&gt;N
+&lt;dxcc:3&gt;291
+&lt;mode:3&gt;DMR
+&lt;band_rx:4&gt;70cm
+&lt;email:16&gt;KE4KMD@gmail.com
+&lt;my_state:2&gt;FL
+&lt;gridsquare:6&gt;EM93qb
+&lt;time_on:4&gt;2100
+&lt;qso_date:8&gt;20260919
+&lt;freq_rx:3&gt;420
+&lt;lotw_qsl_sent:1&gt;N
+&lt;lon:11&gt;W080 37.042
+&lt;cqz:1&gt;5
+&lt;distance:3&gt;495
+&lt;my_gridsquare:6&gt;EL88sv
+&lt;my_lon:11&gt;W082 27.480
+&lt;app_qrzlog_status:1&gt;C
+&lt;qso_date_off:8&gt;20260919
+&lt;cnty:11&gt;SC,Colleton
+&lt;eor&gt;
 
-START_DATE=2026-07-12&CALLSIGN=KR4NQN&COUNT=2&ACTION=STATUS&BOOK_NAME=KR4NQN Logbook&RESULT=OK&END_DATE=2036-07-11&OWNER=KR4NQN&BOOKID=474797&CONFIRMED=2&DXCC_COUNT=2
+&lt;band_rx:4&gt;70cm
+&lt;email:16&gt;pu3gap@gmail.com
+&lt;dxcc:3&gt;108
+&lt;mode:3&gt;DMR
+&lt;eqsl_qsl_sent:1&gt;N
+&lt;freq:3&gt;420
+&lt;band:4&gt;70cm
+&lt;my_lat:11&gt;N028 53.748
+&lt;qrzcom_qso_upload_date:8&gt;20260920
+&lt;qsl_rcvd:1&gt;N
+&lt;time_off:4&gt;0015
+&lt;my_cnty:9&gt;FL,Citrus
+&lt;ituz:2&gt;15
+&lt;my_cq_zone:1&gt;5
+&lt;my_country:13&gt;United States
+&lt;my_gridsquare:6&gt;EL88sv
+&lt;qso_date_off:8&gt;20260920
+&lt;my_lon:11&gt;W082 27.480
+&lt;app_qrzlog_status:1&gt;C
+&lt;distance:4&gt;7189
+&lt;lon:11&gt;W053 48.713
+&lt;cqz:2&gt;11
+&lt;freq_rx:3&gt;420
+&lt;lotw_qsl_sent:1&gt;N
+&lt;time_on:4&gt;0015
+&lt;qso_date:8&gt;20260920
+&lt;gridsquare:6&gt;GG30ch
+&lt;my_state:2&gt;FL
+&lt;qrzcom_qso_upload_status:1&gt;Y
+&lt;my_city:13&gt;Beverly Hills
+&lt;qsl_via:19&gt;QSL DMR Bridge 3100
+&lt;qth:16&gt;Santa Maria, RS,
+&lt;my_itu_zone:1&gt;8
+&lt;my_name:11&gt;Keith Utter
+&lt;qrzcom_qso_download_date:8&gt;20260920
+&lt;eqsl_qsl_rcvd:1&gt;N
+&lt;qrzcom_qso_download_status:1&gt;Y
+&lt;country:6&gt;Brazil
+&lt;name:14&gt;AMILTON PASSOS
+&lt;qsl_sent:1&gt;N
+&lt;app_qrzlog_qsldate:8&gt;20260920
+&lt;lotw_qsl_rcvd:1&gt;N
+&lt;lat:11&gt;S029 41.645
+&lt;app_qrzlog_logid:10&gt;1503980688
+&lt;call:6&gt;PU3GAP
+&lt;cont:2&gt;SA
+&lt;station_callsign:6&gt;KR4NQN
+&lt;eor&gt;
+
