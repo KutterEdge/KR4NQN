@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <title>KR4NQN Dashboard</title>
@@ -99,8 +98,8 @@
       border: 1px solid #222;
       border-radius: 6px;
       box-shadow:
-        inset 0 0 12px rgba(0, 0, 0, 0.8),
-        0 0 4px rgba(0, 0, 0, 0.6);
+        inset 0 0 12px rgba(0,0,0,0.8),
+        0 0 4px rgba(0,0,0,0.6);
     }
 
     .card-header {
@@ -233,104 +232,27 @@
       background: #f1c40f;
       color: #000;
     }
+
+
   </style>
 
-  <style>
-    :root {
-      --bg: #1e1e2e;
-      --surface: #252538;
-      --text: #cdd6f4;
-      --accent: #89b4fa;
-    }
-
-    body {
-      font-family: system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 20px;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .card {
-      background: var(--surface);
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 15px;
-    }
-
-    label {
-      margin-bottom: 5px;
-      font-weight: bold;
-      font-size: 0.9rem;
-    }
-
-    input,
-    select,
-    button {
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #45475a;
-      background: #11111b;
-      color: #fff;
-    }
-
-    button {
-      background: var(--accent);
-      color: #11111b;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-
-    th,
-    td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #45475a;
-    }
-
-    th {
-      background: #11111b;
-    }
-
-    .status {
-      padding: 10px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      font-weight: bold;
-      display: none;
-    }
-  </style>
+   <style>
+        :root { --bg: #1e1e2e; --surface: #252538; --text: #cdd6f4; --accent: #89b4fa; }
+        body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: var(--surface); padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 15px; }
+        label { margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        input, select, button { padding: 10px; border-radius: 6px; border: 1px solid #45475a; background: #11111b; color: #fff; }
+        button { background: var(--accent); color: #11111b; font-weight: bold; cursor: pointer; border: none; }
+        button:hover { opacity: 0.9; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #45475a; }
+        th { background: #11111b; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; display: none; }
+    </style>
 </head>
-
 <body>
   <header>
     <div class="brand">
@@ -348,7 +270,10 @@
         <span class="status-dot"></span>
         <span>Station status: Online</span>
       </div>
-
+      <div class="status-line">
+        <span>Log Updated :</span>
+        <span id="last-refresh">—</span>
+      </div>
       <div class="status-line">
         <span id="utcClock" class="clock-utc">--:--:-- UTC</span>
         <span>•</span>
@@ -363,65 +288,68 @@
   </header>
 
   <div class="container">
-    <h1>📻 QRZ Logbook Manager</h1>
-
-    <!-- Logbook Display -->
-    <div class="card">
-      <h2>Recent Contacts</h2>
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>Date/Time</th>
-              <th>Callsign</th>
-              <th>Band</th>
-              <th>Mode</th>
-              <th>Country</th>
-            </tr>
-          </thead>
-          <tbody id="logTableBody">
-            <tr>
-              <td>2026-09-20</td>
-              <td>PU3GAP</td>
-              <td>70cm</td>
-              <td>DMR</td>
-              <td>Brazil</td>
-            </tr>
-            <tr>
-              <td>2026-09-20</td>
-              <td>KE4KMD</td>
-              <td>70cm</td>
-              <td>DMR</td>
-              <td>United States</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <h1>📻 QRZ Logbook Manager</h1>
+        
+        <!-- Logbook Display -->
+        <div class="card">
+            <h2>Recent Contacts</h2>
+            <div style="overflow-x: auto;">
+                <table> 
+  <thead> 
+    <tr> 
+      <th>Date/Time</th> 
+      <th>Callsign</th> 
+      <th>Band</th> 
+      <th>Mode</th> 
+      <th>Country</th> 
+    </tr> 
+  </thead>
+  <tbody id="logTableBody"> 
+    <tr>
+      <td>2026-09-20</td>
+      <td>PU3GAP</td>
+      <td>70cm</td>
+      <td>DMR</td>
+      <td>Brazil</td>
+    </tr>
+    <tr>
+      <td>2026-09-20</td>
+      <td>KE4KMD</td>
+      <td>70cm</td>
+      <td>DMR</td>
+      <td>United States</td>
+    </tr>
+  </tbody> 
+</table>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    // Run once when the page loads to set the "Last refresh" time
-    const now = new Date();
+    <script>
+  // 1. Display the file's last modified/updated timestamp
+  const lastUpdated = new Date(document.lastModified);
+  
+  // Format it cleanly (Example: "MM/DD/YYYY, 12:00:00 PM")
+  document.getElementById('last-refresh').innerText = lastUpdated.toLocaleString();
 
-    function updateClocks() {
-      const time = new Date();
+  // 2. Live Clocks Logic
+  function updateClocks() {
+    const time = new Date();
 
-      // 1. Update UTC Clock
-      const utcString = time.toISOString().slice(11, 19) + ' UTC';
-      document.getElementById('utcClock').innerText = utcString;
+    // Update UTC Clock
+    const utcString = time.toISOString().slice(11, 19) + ' UTC';
+    document.getElementById('utcClock').innerText = utcString;
 
-      // 2. Update Local Clock
-      const localString = time.toLocaleTimeString() + ' LOCAL';
-      document.getElementById('localClock').innerText = localString;
-    }
+    // Update Local Clock
+    const localString = time.toLocaleTimeString() + ' LOCAL';
+    document.getElementById('localClock').innerText = localString;
+  }
 
-    // Update the clocks immediately, then refresh them every 1 second (1000ms)
-    updateClocks();
-    setInterval(updateClocks, 1000);
-  </script>
+  // Run the clocks immediately and update every second
+  updateClocks();
+  setInterval(updateClocks, 1000);
+</script>
 
-
+    
 </body>
-
 </html>
