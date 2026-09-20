@@ -9,12 +9,12 @@ if not API_KEY:
         f.write("ERROR: QRZ_API_KEY secret is not configured in GitHub.")
     exit(1)
 
-URL = "https://qrz.com"
+URL = "https://logbook.qrz.com/api"
 HEADERS = {"User-Agent": "GitHubPagesLogbookWidget/1.0"}
 
-print("Fetching logbook data from QRZ...")
+print("Extracting records from QRZ via FETCH call...")
 
-# 2. Use your API key directly to FETCH data
+# 2. Pass the authorization key and pull all records
 fetch_payload = {
     "KEY": API_KEY, 
     "ACTION": "FETCH",
@@ -26,35 +26,35 @@ try:
     
     if response.status_code != 200:
         with open("logbook.txt", "w") as f:
-            f.write(f"HTTP Error from QRZ: {response.status_code}")
+            f.write(f"HTTP Connection Error: {response.status_code}")
         exit(1)
 
-    # 3. Parse the URL-encoded response string
+    # 3. Parse the key-value string pairs separated by ampersands
     parsed_response = urllib.parse.parse_qs(response.text)
     
-    # Extract values safely (parse_qs wraps values in lists)
+    # Extract structural return tokens safely
     result = parsed_response.get("RESULT", [""])[0]
-    adif_data = parsed_response.get("ADIF", [""])[0]
+    log_data = parsed_response.get("DATA", [""])[0]  # QRZ nests the file payload inside DATA=
     reason = parsed_response.get("REASON", [""])[0]
 
-    if result == "OK" and adif_data:
-        # Save the clean ADIF data to logbook.txt
+    if result == "OK" and log_data:
+        # Save the isolated raw ADIF records straight to the local file
         with open("logbook.txt", "w", encoding="utf-8") as f:
-            f.write(adif_data.strip())
-        print(f"Success! Logbook updated with {len(adif_data)} characters.")
+            f.write(log_data.strip())
+        print(f"Success! Saved logbook details to file ({len(log_data)} characters parsed).")
         
-    elif result == "FAIL":
+    elif result == "FAIL" or result == "AUTH":
         with open("logbook.txt", "w") as f:
             f.write(f"QRZ API Error: {reason}")
-        print(f"QRZ Error: {reason}")
+        print(f"Server rejected request: {reason}")
         
     else:
-        # Fallback debug in case the format varies
+        # Fallback dump to help diagnose formatting variations
         with open("logbook.txt", "w", encoding="utf-8") as f:
-            f.write(f"Unexpected Response Format.\nRaw Output:\n{response.text}")
-        print("Unexpected response structure.")
+            f.write(f"Unexpected data envelope format.\nRaw Data:\n{response.text}")
+        print("Data parsing complete via fallback route.")
 
 except Exception as e:
     with open("logbook.txt", "w") as f:
-        f.write(f"Python script execution failed: {str(e)}")
-    print(f"Execution error: {e}")
+        f.write(f"Python script execution fault: {str(e)}")
+    print(f"Execution tracking anomaly: {e}")
