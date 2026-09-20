@@ -8,43 +8,62 @@ if not API_KEY:
     print("Error: QRZ_API_KEY secret not found.")
     exit(1)
 
-URL = "https://qrz.com"
+URL = "https://logbook.qrz.com/api"
+# QRZ requires a recognizable user agent string
+HEADERS = {"User-Agent": "GitHubPagesLogbookWidget/1.0"}
 
-# 2. Authenticate and get a temporary Session Key (KEY)
+print("Authenticating with QRZ...")
+# 2. Authenticate and get a temporary Session Key
 payload = {"KEY": API_KEY, "ACTION": "STATUS"}
-response = requests.post(URL, data=payload)
+response = requests.post(URL, data=payload, headers=HEADERS)
 
 if response.status_code != 200:
     print(f"Failed to connect to QRZ: {response.status_code}")
     exit(1)
 
-# QRZ returns XML responses
 try:
     root = ET.fromstring(response.text)
-    # Search for the temporary session key
+    
+    # Check if QRZ rejected the API key
+    result_node = root.find(".//RESULT")
+    if result_node is not None and result_node.text != "OK":
+        error_msg = root.find(".//REASON").text if root.find(".//REASON") is not None else "Unknown auth error"
+        with open("logbook.txt", "w") as f:
+            f.write(f"QRZ API Error: {result_node.text} - {error_msg}")
+        print(f"QRZ rejected request: {result_node.text} - {error_msg}")
+        exit(0)
+
     session_key = root.find(".//KEY").text if root.find(".//KEY") is not None else None
     
     if not session_key:
-        print("Could not retrieve session key. Check your QRZ API Key.")
-        print("QRZ Response:", response.text)
+        print("Could not retrieve session key.")
         exit(1)
         
-    # 3. Fetch the log data (Using FETCH to get ADIF data)
-    # Note: QRZ XML logbook API primarily outputs ADIF data wrapped inside an XML payload
-    fetch_payload = {"KEY": session_key, "ACTION": "FETCH"}
-    fetch_response = requests.post(URL, data=fetch_payload)
+    print("Session key acquired. Fetching entire logbook records...")
     
+    # 3. Explicitly ask for ALL logs using the proper parameters
+    fetch_payload = {
+        "KEY": session_key, 
+        "ACTION": "FETCH",
+        "OPTION": "ALL"  # Explicitly tells QRZ to extract your actual logs
+    }
+    
+    fetch_response = requests.post(URL, data=fetch_payload, headers=HEADERS)
     fetch_root = ET.fromstring(fetch_response.text)
-    adif_data = fetch_root.find(".//ADIF").text if fetch_root.find(".//ADIF") is not None else ""
     
-    if adif_data:
-        # Save the raw ADIF string into a file your website can read
+    # Extract the raw ADIF string
+    adif_node = fetch_root.find(".//ADIF")
+    adif_data = adif_node.text if adif_node is not None else ""
+    
+    if adif_data and adif_data.strip():
         with open("logbook.txt", "w", encoding="utf-8") as f:
             f.write(adif_data.strip())
-        print("Logbook successfully updated and saved to logbook.txt!")
+        print(f"Logbook successfully updated! Saved {len(adif_data)} characters of data.")
     else:
-        print("No logbook data returned or error in fetching.")
-        print("QRZ Response:", fetch_response.text)
+        # If it's still blank, write the raw XML response into the file to debug it
+        with open("logbook.txt", "w", encoding="utf-8") as f:
+            f.write(f"Debug Info: No logs returned.\nRaw Response:\n{fetch_response.text}")
+        print("No logbook data returned. Wrote raw XML to logbook.txt for inspection.")
 
 except ET.ParseError:
     print("Failed to parse QRZ XML response.")
