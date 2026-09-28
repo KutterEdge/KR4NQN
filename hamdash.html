@@ -41,6 +41,13 @@
         }
     </script>
 
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Leaflet Terminator Plugin (Calculates live solar day/night boundary) -->
+<script src="https://unpkg.com/@joergdietrich/leaflet.terminator"></script>
+
     <style>
         /* CRT Scanline & Tactical Overlay Effects */
         .crt-overlay {
@@ -311,16 +318,47 @@
                     
                     <!-- View B: TimeAndDate Dynamic Sun Map Embed -->
                     <div id="view-timeanddate" class="map-view-panel w-full h-full hidden p-2">
-                        <iframe id="timeanddate-frame" 
-                                src="https://www.timeanddate.com/scripts/sunmap.php" 
-                                class="w-full h-[450px] rounded border border-tactical-border" 
-                                frameborder="0" 
-                                scrolling="no"></iframe>
-                        <div class="w-full flex justify-between items-center text-[11px] font-mono text-slate-400 mt-2 px-2">
-                            <span><i class="fa-solid fa-circle-info text-tactical-lime mr-1"></i> TimeAndDate Interactive Solar Position & Day/Night Boundary Overlay.</span>
-                            <span>Live Script Stream</span>
-                        </div>
-                    </div>
+    <!-- Interactive Map Container replacing the iframe -->
+    <div id="sunmap-container" class="w-full h-[450px] rounded border border-tactical-border overflow-hidden"></div>
+
+    <div class="w-full flex justify-between items-center text-[11px] font-mono text-slate-400 mt-2 px-2">
+        <span><i class="fa-solid fa-circle-info text-tactical-lime mr-1"></i> Interactive Solar Position & Day/Night Boundary.</span>
+        <span>Live Client Rendering</span>
+    </div>
+</div>
+
+
+
+<script>
+    // Initialize Leaflet map
+    const map = L.map('sunmap-container', {
+        center: [20, 0],
+        zoom: 2,
+        minZoom: 1,
+        maxZoom: 6,
+        worldCopyJump: true
+    });
+
+    // Dark-themed tile layer (matching tactical UI style)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Add live day/night shadow overlay
+    const terminator = L.terminator({
+        fillColor: '#000000',
+        fillOpacity: 0.5,
+        color: '#ffdd00',
+        weight: 1
+    }).addTo(map);
+
+    // Update shadow boundary every minute
+    setInterval(() => {
+        terminator.setTime();
+    }, 60000);
+</script>
 
                     <!-- View C: NOAA GOES Satellite / Solar Imagery -->
                     <div id="view-noaa" class="map-view-panel w-full h-full hidden p-2 flex flex-col items-center justify-center">
