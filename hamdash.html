@@ -7,13 +7,14 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
-     <!-- Icon Font Stylesheet -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Share Tech Mono, Orbitron, Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS & JS for Live Map -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -40,13 +41,6 @@
             }
         }
     </script>
-
-<!-- Leaflet CSS & JS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- Leaflet Terminator Plugin (Calculates live solar day/night boundary) -->
-<script src="https://unpkg.com/@joergdietrich/leaflet.terminator"></script>
 
     <style>
         /* CRT Scanline & Tactical Overlay Effects */
@@ -91,9 +85,48 @@
             animation: pulse-fast 1.2s infinite ease-in-out;
         }
 
-        /* Custom Range Slider Accent */
-        input[type=range] {
-            accent-color: #a3e635;
+        /* Custom Map Styles & Radar Pulse */
+        #leaflet-map-container {
+            background-color: #0b1009;
+            height: 480px;
+            width: 100%;
+            border-radius: 0.5rem;
+        }
+
+        .qth-pulse-icon {
+            position: relative;
+        }
+        .qth-pulse-icon::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            top: -6px;
+            left: -6px;
+            border-radius: 50%;
+            border: 2px solid #a3e635;
+            animation: qth-beacon 1.8s infinite ease-out;
+        }
+        @keyframes qth-beacon {
+            0% { transform: scale(0.3); opacity: 1; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        /* Leaflet Dark Customization */
+        .leaflet-container {
+            background: #0b1009 !important;
+            font-family: 'Share Tech Mono', monospace !important;
+        }
+        .leaflet-control-zoom a {
+            background-color: #1e261a !important;
+            color: #a3e635 !important;
+            border-color: #32402b !important;
+        }
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background: #1e261a !important;
+            color: #d1fae5 !important;
+            border: 1px solid #32402b !important;
+            font-family: 'Share Tech Mono', monospace !important;
         }
     </style>
 </head>
@@ -113,7 +146,7 @@
                 <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-tactical-lime/10 border border-tactical-lime/30 rounded-lg text-tactical-lime">
-                            <i class="fa-solid text-xl fa-tower-cell"></i>
+                            <i class="fa-solid font-mono text-xl fa-tower-cell"></i>
                         </div>
                         <div>
                             <div class="flex items-center space-x-2">
@@ -130,13 +163,9 @@
 
                 <!-- Clocks & Station Gauges -->
                 <div class="flex items-center justify-around md:justify-end w-full md:w-auto gap-3 sm:gap-4 font-mono text-xs border-t md:border-t-0 border-tactical-border pt-2 md:pt-0">
-                    
-                    <div class="text-center px-10 py-3 bg-black text-white rounded border border-tactical-lime/30 box-glow-lime">
-                        <a href="index.html">HOME</a>
-                    </div>
                     <!-- Local Clock -->
                     <div class="text-center px-3 py-1 bg-tactical-bg/80 rounded border border-tactical-border">
-                        <div class="text-slate-400 text-[10px] uppercase tracking-wider">Local (EDT)</div>
+                        <div class="text-slate-400 text-[10px] uppercase tracking-wider">Local Time</div>
                         <div id="clock-local" class="text-slate-200 font-bold text-sm">--:--:--</div>
                     </div>
                     <!-- UTC Clock -->
@@ -144,7 +173,16 @@
                         <div class="text-tactical-lime/80 text-[10px] uppercase font-bold tracking-widest">UTC Time</div>
                         <div id="clock-utc" class="text-tactical-lime font-bold text-base glow-lime">--:--:-- Z</div>
                     </div>
-                    
+                    <!-- Solar Quick Tag -->
+                    <div class="text-center px-3 py-1 bg-tactical-bg/80 rounded border border-tactical-border">
+                        <div class="text-slate-400 text-[10px] uppercase tracking-wider">SFI Index</div>
+                        <div id="hdr-sfi" class="text-amber-500 font-bold text-sm">162 SFU</div>
+                    </div>
+                    <!-- Master Audio Switch -->
+                    <button id="master-audio-toggle" class="px-3 py-1 bg-tactical-bg hover:bg-tactical-accent rounded border border-tactical-border text-slate-300 transition-colors flex items-center gap-2">
+                        <i id="master-audio-icon" class="fa-solid fa-volume-xmark text-slate-500"></i>
+                        <span id="master-audio-text" class="text-[10px] uppercase">Audio Off</span>
+                    </button>
                 </div>
             </div>
         </header>
@@ -161,7 +199,7 @@
                             <h2 class="font-display text-sm font-semibold text-tactical-lime tracking-wider flex items-center gap-2">
                                 <i class="fa-solid fa-sun text-tactical-lime"></i> SOLAR & PROPAGATION
                             </h2>
-                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-tactical-lime/20 text-tactical-lime border border-tactical-lime/30">NOAA LIVE DATA</span>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-tactical-lime/20 text-tactical-lime border border-tactical-lime/30">REALTIME MATRIX</span>
                         </div>
 
                         <!-- Solar Indices Metrics -->
@@ -228,53 +266,53 @@
                                 <i class="fa-solid fa-compass text-tactical-lime"></i> BEARING & GRID CALCULATOR
                             </h2>
                         </div>
-                        <p class="text-xs text-slate-400 font-mono mb-4">
-                            Calculate direct beam heading (Azimuth) & distance from QTH (EL88sv).
+                        <p class="text-xs text-slate-400 font-mono mb-3">
+                            Calculate direct beam heading (Azimuth) & distance from QTH EL88sv.
                         </p>
                         <div class="space-y-3 font-mono text-xs">
                             <div>
-                                <label class="block text-slate-400 mb-1">TARGET GRID OR CALL:</label>
+                                <label class="block text-slate-400 mb-1">TARGET GRID OR CALLSIGN PREFIX:</label>
                                 <div class="flex gap-2">
-                                    <input type="text" id="target-grid-input" placeholder="e.g. FN31 or JA1" class="w-full bg-tactical-card border border-tactical-border rounded px-3 py-2 text-tactical-lime font-bold focus:outline-none focus:border-tactical-lime uppercase">
+                                    <input type="text" id="target-grid-input" value="FN31" placeholder="e.g. FN31, IO91, JA1" class="w-full bg-tactical-card border border-tactical-border rounded px-3 py-2 text-tactical-lime font-bold focus:outline-none focus:border-tactical-lime uppercase">
                                     <button id="calc-bearing-btn" class="px-4 py-2 bg-tactical-lime hover:bg-lime-500 text-tactical-bg font-bold rounded transition-colors">
                                         CALC
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="bg-tactical-card p-4 rounded-lg border border-tactical-border space-y-3 mt-4">
-                                <div class="flex justify-between items-center border-b border-tactical-border pb-2">
+                            <div class="bg-tactical-card p-3 rounded-lg border border-tactical-border space-y-2 mt-2">
+                                <div class="flex justify-between items-center border-b border-tactical-border pb-1.5">
                                     <span class="text-slate-400">BEAM HEADING:</span>
-                                    <span id="res-bearing" class="text-lg font-bold text-tactical-lime glow-lime">045° (NE)</span>
+                                    <span id="res-bearing" class="text-lg font-bold text-tactical-lime glow-lime">035° (NE)</span>
                                 </div>
-                                <div class="flex justify-between items-center border-b border-tactical-border pb-2">
+                                <div class="flex justify-between items-center border-b border-tactical-border pb-1.5">
                                     <span class="text-slate-400">DISTANCE (MI):</span>
-                                    <span id="res-dist-mi" class="text-sm font-bold text-slate-200">985 mi</span>
+                                    <span id="res-dist-mi" class="text-sm font-bold text-slate-200">1,024 mi</span>
                                 </div>
-                                <div class="flex justify-between items-center border-b border-tactical-border pb-2">
+                                <div class="flex justify-between items-center border-b border-tactical-border pb-1.5">
                                     <span class="text-slate-400">DISTANCE (KM):</span>
-                                    <span id="res-dist-km" class="text-sm font-bold text-slate-200">1,585 km</span>
+                                    <span id="res-dist-km" class="text-sm font-bold text-slate-200">1,648 km</span>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-slate-400">ANTENNA ROTOR:</span>
-                                    <span id="res-rotor-stat" class="text-xs font-bold text-emerald-400">ALIGNED</span>
+                                    <span id="res-rotor-stat" class="text-xs font-bold text-emerald-400">READY</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="mt-4 flex justify-center items-center py-2">
+                    <div class="mt-3 flex justify-center items-center py-1">
                         <div class="relative w-24 h-24 rounded-full border-2 border-tactical-border flex items-center justify-center bg-tactical-card">
                             <div class="absolute text-[9px] font-mono text-slate-500 top-1">N</div>
                             <div class="absolute text-[9px] font-mono text-slate-500 bottom-1">S</div>
                             <div class="absolute text-[9px] font-mono text-slate-500 left-1">W</div>
                             <div class="absolute text-[9px] font-mono text-slate-500 right-1">E</div>
-                            <div id="compass-needle" class="w-1 h-16 bg-gradient-to-t from-slate-600 to-tactical-lime rounded transition-transform duration-500 transform rotate-45"></div>
+                            <div id="compass-needle" class="w-1 h-16 bg-gradient-to-t from-slate-600 to-tactical-lime rounded transition-transform duration-500 transform rotate-35"></div>
                         </div>
                     </div>
                 </section>
             </div>
 
-            <!-- ROW 2: LIVE REAL-TIME DAY/NIGHT & GRAYLINE MAP (OPTION 2 LIVE EMBEDS) -->
+            <!-- ROW 2: LIVE REAL-TIME DAY/NIGHT & GRAYLINE MAP -->
             <section class="bg-tactical-bg/60 border border-tactical-border rounded-xl p-4 sm:p-5">
                 <div class="flex flex-col md:flex-row items-start md:items-center justify-between pb-3 border-b border-tactical-border gap-3 mb-4">
                     <div class="flex items-center gap-2">
@@ -283,113 +321,43 @@
                         </h2>
                         <span class="px-2 py-0.5 text-[10px] font-mono bg-tactical-lime/20 text-tactical-lime border border-tactical-lime/30 rounded flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-tactical-lime led-active"></span>
-                            LIVE SOLAR EMBED
+                            MATH TERMINATOR ENGINE
                         </span>
                     </div>
 
-                    <!-- Map Controls & Auto-Refresh Controls -->
+                    <!-- Map Layer Controls & Metrics -->
                     <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
-                        <!-- View Toggle Buttons -->
-                        <div class="flex bg-tactical-card p-1 rounded border border-tactical-border">
-                            <button id="map-btn-fourmilab" class="map-toggle-btn px-2.5 py-1 rounded bg-tactical-lime text-tactical-bg font-bold transition-all">
-                                FOURMILAB MERCATOR
-                            </button>
-                            <button id="map-btn-timeanddate" class="map-toggle-btn px-2.5 py-1 rounded text-slate-400 hover:text-slate-200 transition-all">
-                                SUN MAP VIEW
-                            </button>
-                            <button id="map-btn-noaa" class="map-toggle-btn px-2.5 py-1 rounded text-slate-400 hover:text-slate-200 transition-all">
-                                NOAA GOES SATELLITE
-                            </button>
-                        </div>
-
-                        <!-- Manual Refresh & Refresh Interval Indicator -->
-                        <div class="flex items-center gap-2 bg-tactical-card px-3 py-1.5 rounded border border-tactical-border">
-                            <span class="text-slate-400 text-[11px]">REFRESH:</span>
-                            <span id="auto-refresh-timer" class="text-tactical-lime font-bold">60s</span>
-                            <button id="btn-force-refresh-map" title="Force Cache-Bust Map Refresh" class="ml-1 text-slate-300 hover:text-tactical-lime transition-colors">
-                                <i class="fa-solid fa-rotate text-xs"></i>
-                            </button>
+                        <button id="toggle-grayline-btn" class="px-3 py-1 rounded bg-tactical-lime text-tactical-bg font-bold transition-all">
+                            GRAYLINE: ON
+                        </button>
+                        <button id="toggle-sun-btn" class="px-3 py-1 rounded bg-tactical-card text-slate-300 border border-tactical-border hover:border-tactical-lime transition-all">
+                            SUBSOLAR: ON
+                        </button>
+                        <div class="flex items-center gap-2 bg-tactical-card px-3 py-1 rounded border border-tactical-border">
+                            <span class="text-slate-400 text-[11px]">UPDATED:</span>
+                            <span id="map-last-update" class="text-tactical-lime font-bold">REALTIME</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Live Map Views Container -->
-                <div class="relative w-full rounded-lg border border-tactical-border bg-black/80 overflow-hidden flex justify-center items-center min-h-[360px] sm:min-h-[460px]">
+                <!-- Leaflet Interactive Map Canvas -->
+                <div class="relative w-full overflow-hidden rounded-lg border border-tactical-border">
+                    <div id="leaflet-map-container"></div>
                     
-                    <!-- View B: TimeAndDate Dynamic Sun Map Embed -->
-                    <div id="view-timeanddate" class="map-view-panel w-full h-full hidden p-2">
-    <!-- Interactive Map Container replacing the iframe -->
-    <div id="sunmap-container" class="w-full h-[450px] rounded border border-tactical-border overflow-hidden"></div>
-
-    <div class="w-full flex justify-between items-center text-[11px] font-mono text-slate-400 mt-2 px-2">
-        <span><i class="fa-solid fa-circle-info text-tactical-lime mr-1"></i> Interactive Solar Position & Day/Night Boundary.</span>
-        <span>Live Client Rendering</span>
-    </div>
-</div>
-
-
-
-<script>
-    // Initialize Leaflet map
-    const map = L.map('sunmap-container', {
-        center: [20, 0],
-        zoom: 2,
-        minZoom: 1,
-        maxZoom: 6,
-        worldCopyJump: true
-    });
-
-    // Dark-themed tile layer (matching tactical UI style)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-        subdomains: 'abcd',
-        maxZoom: 19
-    }).addTo(map);
-
-    // Add live day/night shadow overlay
-    const terminator = L.terminator({
-        fillColor: '#000000',
-        fillOpacity: 0.5,
-        color: '#ffdd00',
-        weight: 1
-    }).addTo(map);
-
-    // Update shadow boundary every minute
-    setInterval(() => {
-        terminator.setTime();
-    }, 60000);
-</script>
-
-                    <!-- View C: NOAA GOES Satellite / Solar Imagery -->
-                    <div id="view-noaa" class="map-view-panel w-full h-full hidden p-2 flex flex-col items-center justify-center">
-                        <img id="noaa-goes-img" 
-                             src="https://radar.weather.gov/ridge/standard/SOUTHEAST_loop.gif" 
-                             alt="NOAA Southeast US Live Radar Loop" 
-                             class="w-full max-h-[450px] object-contain rounded border border-tactical-border shadow-lg">
-                        <div class="w-full flex justify-between items-center text-[11px] font-mono text-slate-400 mt-2 px-2">
-                            <span><i class="fa-solid fa-cloud-bolt text-amber-500 mr-1"></i> NOAA NWS Live Regional Doppler Radar & Atmospheric Composite.</span>
-                            <span id="noaa-last-updated">Loop Auto-Active</span>
+                    <!-- Live Overlay Status Bar -->
+                    <div class="absolute bottom-2 left-2 right-2 bg-tactical-bg/90 backdrop-blur border border-tactical-border rounded p-2 text-xs font-mono flex flex-wrap justify-between items-center z-[1000] gap-2">
+                        <div class="flex items-center gap-4 text-[11px]">
+                            <span class="text-slate-400">QTH: <strong class="text-tactical-lime">BEVERLY HILLS, FL (28.92°N, 82.46°W)</strong></span>
+                            <span class="text-slate-400">DEC: <strong id="solar-declination-val" class="text-amber-400">+00.00°</strong></span>
+                            <span class="text-slate-400">SUB-SOLAR: <strong id="subsolar-coord-val" class="text-amber-400">00.0°N, 00.0°W</strong></span>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Solar & QTH Telemetry Bar -->
-                <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
-                    <div class="bg-tactical-card p-2.5 rounded border border-tactical-border flex justify-between items-center">
-                        <span class="text-slate-400">QTH POSITION:</span>
-                        <span class="text-tactical-lime font-bold">28.91° N, 82.46° W</span>
-                    </div>
-                    <div class="bg-tactical-card p-2.5 rounded border border-tactical-border flex justify-between items-center">
-                        <span class="text-slate-400">SUN DECLINATION:</span>
-                        <span id="sun-declination" class="text-amber-500 font-bold">+0.42° (Equinox)</span>
-                    </div>
-                    <div class="bg-tactical-card p-2.5 rounded border border-tactical-border flex justify-between items-center">
-                        <span class="text-slate-400">GRAYLINE STATUS:</span>
-                        <span class="text-emerald-400 font-bold">OPTIMAL HF HF PROP</span>
+                        <div class="text-[10px] text-slate-400 flex items-center gap-2">
+                            <span class="inline-block w-3 h-2 bg-tactical-lime/80 rounded-sm"></span> Grayline Propagation Zone
+                        </div>
                     </div>
                 </div>
             </section>
-
+            
             <!-- ROW 3: QRZ LOGBOOK & STATION FEED -->
             <section class="bg-tactical-bg/60 border border-tactical-border rounded-xl p-4">
                 <div class="flex flex-col md:flex-row items-start md:items-center justify-between pb-3 border-b border-tactical-border gap-3 mb-4">
@@ -420,141 +388,295 @@
         </footer>
     </div>
 
-    <!-- Scripts -->
+        </main>
+
     <script>
-        // --- Web Audio Synthesizer Engine ---
-        let audioCtx = null;
-
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const btnText = document.getElementById('master-audio-text');
-                const btnIcon = document.getElementById('master-audio-icon');
-                if (btnText && btnIcon) {
-                    btnText.innerText = 'Audio On';
-                    btnIcon.className = 'fa-solid fa-volume-high text-tactical-lime';
-                }
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        document.getElementById('master-audio-toggle')?.addEventListener('click', () => {
-            initAudio();
-            playBeep(900, 0.05);
-        });
-
-        function playBeep(freq = 700, duration = 0.1) {
-            if (!audioCtx) return;
-            try {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch(e) {
-                console.error("Audio beep error", e);
-            }
-        }
-
-        // --- Live Clocks Update ---
+        /* ====================================================================
+           1. REAL-TIME CLOCKS ENGINE
+           ==================================================================== */
         function updateClocks() {
             const now = new Date();
-            document.getElementById('clock-utc').innerText = now.toISOString().substring(11, 19) + ' Z';
-            document.getElementById('clock-local').innerText = now.toLocaleTimeString();
+            
+            // UTC Time
+            const utcHours = String(now.getUTCHours()).padStart(2, '0');
+            const utcMinutes = String(now.getUTCMinutes()).padStart(2, '0');
+            const utcSeconds = String(now.getUTCSeconds()).padStart(2, '0');
+            document.getElementById('clock-utc').textContent = `${utcHours}:${utcMinutes}:${utcSeconds} Z`;
+
+            // Local Time
+            const localHours = String(now.getHours()).padStart(2, '0');
+            const localMinutes = String(now.getMinutes()).padStart(2, '0');
+            const localSeconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock-local').textContent = `${localHours}:${localMinutes}:${localSeconds}`;
         }
         setInterval(updateClocks, 1000);
         updateClocks();
 
-        // --- Option 2 Live Map Switching & Auto-Refresh Logic ---
-        const mapBtnFourmilab = document.getElementById('map-btn-fourmilab');
-        const mapBtnTimeAndDate = document.getElementById('map-btn-timeanddate');
-        const mapBtnNoaa = document.getElementById('map-btn-noaa');
+        /* ====================================================================
+           2. AUDIO TOGGLE LOGIC
+           ==================================================================== */
+        let audioActive = false;
+        const audioBtn = document.getElementById('master-audio-toggle');
+        const audioIcon = document.getElementById('master-audio-icon');
+        const audioText = document.getElementById('master-audio-text');
 
-        const viewFourmilab = document.getElementById('view-fourmilab');
-        const viewTimeAndDate = document.getElementById('view-timeanddate');
-        const viewNoaa = document.getElementById('view-noaa');
+        audioBtn.addEventListener('click', () => {
+            audioActive = !audioActive;
+            if (audioActive) {
+                audioIcon.className = 'fa-solid fa-volume-high text-tactical-lime';
+                audioText.textContent = 'Audio On';
+                audioText.classList.add('text-tactical-lime');
+            } else {
+                audioIcon.className = 'fa-solid fa-volume-xmark text-slate-500';
+                audioText.textContent = 'Audio Off';
+                audioText.classList.remove('text-tactical-lime');
+            }
+        });
 
-        function setMapActive(btn, viewPanel) {
-            playBeep(800, 0.03);
-            [mapBtnFourmilab, mapBtnTimeAndDate, mapBtnNoaa].forEach(b => {
-                b.classList.remove('bg-tactical-lime', 'text-tactical-bg', 'font-bold');
-                b.classList.add('text-slate-400');
-            });
-            btn.classList.add('bg-tactical-lime', 'text-tactical-bg', 'font-bold');
-            btn.classList.remove('text-slate-400');
+        /* ====================================================================
+           3. MAIDENHEAD GRID & AZIMUTH BEARING CALCULATOR
+           ==================================================================== */
+        const QTH_LAT = 28.9178;  // Beverly Hills, FL
+        const QTH_LON = -82.4597;
 
-            [viewFourmilab, viewTimeAndDate, viewNoaa].forEach(p => p.classList.add('hidden'));
-            viewPanel.classList.remove('hidden');
+        function gridToLatLon(grid) {
+            grid = grid.toUpperCase().trim();
+            if (grid.length < 4) return null;
+
+            const fieldLon = (grid.charCodeAt(0) - 65) * 20 - 180;
+            const fieldLat = (grid.charCodeAt(1) - 65) * 10 - 90;
+            const squareLon = parseInt(grid.charAt(2)) * 2;
+            const squareLat = parseInt(grid.charAt(3)) * 1;
+
+            let subLon = 1.0;
+            let subLat = 0.5;
+
+            if (grid.length >= 6) {
+                subLon = ((grid.charCodeAt(4) - 65) + 0.5) * (2 / 24);
+                subLat = ((grid.charCodeAt(5) - 65) + 0.5) * (1 / 24);
+            }
+
+            return {
+                lat: fieldLat + squareLat + subLat,
+                lon: fieldLon + squareLon + subLon
+            };
         }
 
-        mapBtnFourmilab?.addEventListener('click', () => setMapActive(mapBtnFourmilab, viewFourmilab));
-        mapBtnTimeAndDate?.addEventListener('click', () => setMapActive(mapBtnTimeAndDate, viewTimeAndDate));
-        mapBtnNoaa?.addEventListener('click', () => setMapActive(mapBtnNoaa, viewNoaa));
+        function calculateBearingAndDistance(lat1, lon1, lat2, lon2) {
+            const rad = Math.PI / 180;
+            const phi1 = lat1 * rad;
+            const phi2 = lat2 * rad;
+            const deltaLambda = (lon2 - lon1) * rad;
 
-        // --- Auto-Refresh Cache Buster for Map Images ---
-        let refreshSecondsLeft = 60;
+            // Bearing calculation
+            const y = Math.sin(deltaLambda) * Math.cos(phi2);
+            const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(deltaLambda);
+            let bearing = Math.atan2(y, x) * (180 / Math.PI);
+            bearing = (bearing + 360) % 360;
 
-        function refreshMapImages() {
-            const timestamp = new Date().getTime();
+            // Distance calculation (Haversine Formula)
+            const R = 3958.8; // Radius of Earth in Miles
+            const dLat = (lat2 - lat1) * rad;
+            const dLon = (lon2 - lon1) * rad;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(phi1) * Math.cos(phi2) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distMiles = R * c;
+            const distKm = distMiles * 1.60934;
+
+            return { bearing, distMiles, distKm };
+        }
+
+        function getCardinalDirection(angle) {
+            const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+            return directions[Math.round(angle / 45) % 8];
+        }
+
+        function processBearingCalculation() {
+            const inputVal = document.getElementById('target-grid-input').value;
+            let coords = gridToLatLon(inputVal);
+
+            // Fallback lookup for common callsign prefixes if grid parsing fails
+            if (!coords) {
+                const prefixMap = {
+                    'JA': { lat: 35.6762, lon: 139.6503 }, // Japan
+                    'VK': { lat: -33.8688, lon: 151.2093 }, // Australia
+                    'G':  { lat: 51.5074, lon: -0.1278 },   // UK
+                    'PY': { lat: -23.5505, lon: -46.6333 }  // Brazil
+                };
+                const cleanInput = inputVal.toUpperCase().trim();
+                for (let key in prefixMap) {
+                    if (cleanInput.startsWith(key)) {
+                        coords = prefixMap[key];
+                        break;
+                    }
+                }
+            }
+
+            if (coords) {
+                const res = calculateBearingAndDistance(QTH_LAT, QTH_LON, coords.lat, coords.lon);
+                document.getElementById('res-bearing').textContent = `${Math.round(res.bearing)}° (${getCardinalDirection(res.bearing)})`;
+                document.getElementById('res-dist-mi').textContent = `${Math.round(res.distMiles).toLocaleString()} mi`;
+                document.getElementById('res-dist-km').textContent = `${Math.round(res.distKm).toLocaleString()} km`;
+                document.getElementById('compass-needle').style.transform = `rotate(${res.bearing}deg)`;
+            } else {
+                document.getElementById('res-bearing').textContent = "INVALID GRID";
+            }
+        }
+
+        document.getElementById('calc-bearing-btn').addEventListener('click', processBearingCalculation);
+        document.getElementById('target-grid-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') processBearingCalculation();
+        });
+
+        /* ====================================================================
+           4. LEAFLET LIVE DAY/NIGHT & GRAYLINE MAP ENGINE
+           ==================================================================== */
+        let map, nightLayer, subsolarMarker, graylineVisible = true, subsolarVisible = true;
+
+        // Solar Position Calculation Algorithm
+        function getSolarPosition(date) {
+            const now = date || new Date();
+            const julianDate = (now.getTime() / 86400000) + 2440587.5;
+            const d = julianDate - 2451545.0;
+
+            // Mean anomaly & ecliptic longitude
+            const g = 357.529 + 0.98560028 * d;
+            const q = 280.459 + 0.98564736 * d;
+            const L = q + 1.915 * Math.sin(g * Math.PI / 180) + 0.020 * Math.sin(2 * g * Math.PI / 180);
+
+            // Obliquity of the ecliptic
+            const e = 23.439 - 0.0000004 * d;
+
+            // Sun declination & Right Ascension
+            const dec = Math.asin(Math.sin(e * Math.PI / 180) * Math.sin(L * Math.PI / 180)) * 180 / Math.PI;
             
-            // Refresh Fourmilab Map Image
-            const fourmilabImg = document.getElementById('fourmilab-img');
-            if (fourmilabImg) {
-                fourmilabImg.src = `https://www.fourmilab.ch/cgi-bin/Earth?img=learth.evif&imgmode=1&eye=0&rect=1&t=${timestamp}`;
-                document.getElementById('fourmilab-last-updated').innerText = `Updated: ${new Date().toLocaleTimeString()}`;
-            }
+            // Subsolar point calculation
+            const utcHours = now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600;
+            const sunLon = 180 - (utcHours * 15);
 
-            // Refresh NOAA Radar Image
-            const noaaImg = document.getElementById('noaa-goes-img');
-            if (noaaImg) {
-                noaaImg.src = `https://radar.weather.gov/ridge/standard/SOUTHEAST_loop.gif?t=${timestamp}`;
-                document.getElementById('noaa-last-updated').innerText = `Updated: ${new Date().toLocaleTimeString()}`;
-            }
-
-            refreshSecondsLeft = 60;
+            return { lat: dec, lon: (sunLon > 180) ? sunLon - 360 : (sunLon < -180 ? sunLon + 360 : sunLon) };
         }
 
-        // Countdown Timer Interval
-        setInterval(() => {
-            refreshSecondsLeft--;
-            const timerEl = document.getElementById('auto-refresh-timer');
-            if (timerEl) {
-                timerEl.innerText = `${refreshSecondsLeft}s`;
+        // Calculate Night Terminator Polygon Coordinates
+        function getTerminatorCoordinates(sunPos) {
+            const coords = [];
+            const sunLat = sunPos.lat * Math.PI / 180;
+            const sunLon = sunPos.lon * Math.PI / 180;
+
+            for (let lon = -180; lon <= 180; lon += 2) {
+                const radLon = lon * Math.PI / 180;
+                // Solar zenith calculation for terminator boundary
+                const lat = Math.atan(-Math.cos(radLon - sunLon) / Math.tan(sunLat)) * 180 / Math.PI;
+                coords.push([lat, lon]);
             }
 
-            if (refreshSecondsLeft <= 0) {
-                refreshMapImages();
+            // Complete polygon surrounding the night hemisphere
+            if (sunPos.lat >= 0) {
+                coords.push([-90, 180]);
+                coords.push([-90, -180]);
+            } else {
+                coords.push([90, 180]);
+                coords.push([90, -180]);
             }
-        }, 1000);
 
-        // Force Manual Refresh Button Trigger
-        document.getElementById('btn-force-refresh-map')?.addEventListener('click', () => {
-            playBeep(950, 0.05);
-            refreshMapImages();
+            return coords;
+        }
+
+        function initMap() {
+            // Initialize Leaflet Map centered on QTH
+            map = L.map('leaflet-map-container', {
+                center: [20, 0],
+                zoom: 2,
+                minZoom: 1,
+                maxZoom: 7,
+                attributionControl: false
+            });
+
+            // CartoDB Dark Matter Tile Layer
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Custom Pulsing QTH Icon for Beverly Hills, FL
+            const qthIcon = L.divIcon({
+                className: 'qth-pulse-icon',
+                html: '<div style="width: 12px; height: 12px; background-color: #a3e635; border-radius: 50%; border: 2px solid #141a12;"></div>',
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
+
+            const qthMarker = L.marker([QTH_LAT, QTH_LON], { icon: qthIcon }).addTo(map);
+            qthMarker.bindPopup("<strong>KR4NQN STATION</strong><br>Beverly Hills, FL<br>Grid: EL88sv");
+
+            // Subsolar Point Marker
+            const sunIcon = L.divIcon({
+                html: '<i class="fa-solid fa-sun text-amber-400 text-xl glow-amber"></i>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+            subsolarMarker = L.marker([0, 0], { icon: sunIcon }).addTo(map);
+
+            updateSolarMap();
+            setInterval(updateSolarMap, 30000); // Auto update every 30 seconds
+        }
+
+        function updateSolarMap() {
+            const sunPos = getSolarPosition();
+
+            // Update Metrics Panel
+            document.getElementById('solar-declination-val').textContent = `${sunPos.lat >= 0 ? '+' : ''}${sunPos.lat.toFixed(2)}°`;
+            document.getElementById('subsolar-coord-val').textContent = `${Math.abs(sunPos.lat).toFixed(1)}°${sunPos.lat >= 0 ? 'N' : 'S'}, ${Math.abs(sunPos.lon).toFixed(1)}°${sunPos.lon >= 0 ? 'E' : 'W'}`;
+
+            // Update Subsolar Marker Position
+            if (subsolarMarker) {
+                subsolarMarker.setLatLng([sunPos.lat, sunPos.lon]);
+            }
+
+            // Render/Update Night & Grayline Terminator Polygon
+            const polyCoords = getTerminatorCoordinates(sunPos);
+
+            if (nightLayer) {
+                map.removeLayer(nightLayer);
+            }
+
+            nightLayer = L.polygon(polyCoords, {
+                color: '#a3e635',       // Tactical Lime Grayline Border
+                weight: graylineVisible ? 2.5 : 0,
+                opacity: 0.9,
+                fillColor: '#000000',   // Dark Night Shading
+                fillOpacity: 0.55
+            }).addTo(map);
+
+            const now = new Date();
+            document.getElementById('map-last-update').textContent = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')} Z`;
+        }
+
+        // Toggle Controls
+        document.getElementById('toggle-grayline-btn').addEventListener('click', (e) => {
+            graylineVisible = !graylineVisible;
+            e.target.textContent = `GRAYLINE: ${graylineVisible ? 'ON' : 'OFF'}`;
+            e.target.className = `px-3 py-1 rounded font-bold transition-all ${graylineVisible ? 'bg-tactical-lime text-tactical-bg' : 'bg-tactical-card text-slate-400 border border-tactical-border'}`;
+            updateSolarMap();
         });
 
-        // --- Azimuth & Distance Bearing Calculation Event ---
-        document.getElementById('calc-bearing-btn')?.addEventListener('click', () => {
-            playBeep(850, 0.05);
-            const input = document.getElementById('target-grid-input').value.trim();
-            if (input) {
-                document.getElementById('res-bearing').innerText = '052° (ENE)';
-                document.getElementById('res-dist-mi').innerText = '1,240 mi';
-                document.getElementById('res-dist-km').innerText = '1,995 km';
-                document.getElementById('compass-needle').style.transform = 'rotate(52deg)';
+        document.getElementById('toggle-sun-btn').addEventListener('click', (e) => {
+            subsolarVisible = !subsolarVisible;
+            e.target.textContent = `SUBSOLAR: ${subsolarVisible ? 'ON' : 'OFF'}`;
+            if (subsolarVisible) {
+                map.addLayer(subsolarMarker);
+            } else {
+                map.removeLayer(subsolarMarker);
             }
         });
+
+        // Initialize Map on Load
+        window.onload = function() {
+            initMap();
+            processBearingCalculation();
+        };
     </script>
 </body>
 </html>
