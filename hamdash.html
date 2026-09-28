@@ -163,26 +163,20 @@
 
                 <!-- Clocks & Station Gauges -->
                 <div class="flex items-center justify-around md:justify-end w-full md:w-auto gap-3 sm:gap-4 font-mono text-xs border-t md:border-t-0 border-tactical-border pt-2 md:pt-0">
+                    <!-- Home Button -->
+                    <div class="text-center px-4 py-5 bg-tactical-bg/80 rounded border border-tactical-border">
+                        <div id="hdr-sfi" class="text-amber-500 font-bold text-sm"><a href="index.html">HOME</a></div>
+                    </div>
                     <!-- Local Clock -->
-                    <div class="text-center px-3 py-1 bg-tactical-bg/80 rounded border border-tactical-border">
+                    <div class="text-center px-4 py-3 bg-tactical-bg/80 rounded border border-tactical-border">
                         <div class="text-slate-400 text-[10px] uppercase tracking-wider">Local Time</div>
                         <div id="clock-local" class="text-slate-200 font-bold text-sm">--:--:--</div>
                     </div>
                     <!-- UTC Clock -->
-                    <div class="text-center px-4 py-1 bg-tactical-lime/10 rounded border border-tactical-lime/30 box-glow-lime">
+                    <div class="text-center px-4 py-3 bg-tactical-lime/10 rounded border border-tactical-lime/30 box-glow-lime">
                         <div class="text-tactical-lime/80 text-[10px] uppercase font-bold tracking-widest">UTC Time</div>
-                        <div id="clock-utc" class="text-tactical-lime font-bold text-base glow-lime">--:--:-- Z</div>
+                        <div id="clock-utc" class="text-tactical-lime font-bold text-base glow-lime">--:--:--</div>
                     </div>
-                    <!-- Solar Quick Tag -->
-                    <div class="text-center px-3 py-1 bg-tactical-bg/80 rounded border border-tactical-border">
-                        <div class="text-slate-400 text-[10px] uppercase tracking-wider">SFI Index</div>
-                        <div id="hdr-sfi" class="text-amber-500 font-bold text-sm">162 SFU</div>
-                    </div>
-                    <!-- Master Audio Switch -->
-                    <button id="master-audio-toggle" class="px-3 py-1 bg-tactical-bg hover:bg-tactical-accent rounded border border-tactical-border text-slate-300 transition-colors flex items-center gap-2">
-                        <i id="master-audio-icon" class="fa-solid fa-volume-xmark text-slate-500"></i>
-                        <span id="master-audio-text" class="text-[10px] uppercase">Audio Off</span>
-                    </button>
                 </div>
             </div>
         </header>
@@ -401,7 +395,7 @@
             const utcHours = String(now.getUTCHours()).padStart(2, '0');
             const utcMinutes = String(now.getUTCMinutes()).padStart(2, '0');
             const utcSeconds = String(now.getUTCSeconds()).padStart(2, '0');
-            document.getElementById('clock-utc').textContent = `${utcHours}:${utcMinutes}:${utcSeconds} Z`;
+            document.getElementById('clock-utc').textContent = `${utcHours}:${utcMinutes}:${utcSeconds}`;
 
             // Local Time
             const localHours = String(now.getHours()).padStart(2, '0');
