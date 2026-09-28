@@ -1,40 +1,34 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
-<center><head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KR4NQN // Tactical Ham Radio Command Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
+     <!-- Icon Font Stylesheet -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Share Tech Mono & Orbitron & Inter -->
+    <!-- Google Fonts: Share Tech Mono, Orbitron, Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        amber: {
-                            400: '#f59e0b',
-                            500: '#d97706',
-                            glow: '#ffb000',
-                        },
-                        neon: {
-                            green: '#00ff66',
-                            cyan: '#00f3ff',
-                            red: '#ff0055',
-                            yellow: '#ffcc00'
-                        },
-                        crt: {
-                            bg: '#0a0d14',
-                            card: '#111622',
-                            border: '#1e293b',
-                            accent: '#182234'
+                        tactical: {
+                            bg: '#141a12',      /* Deep Olive Drab Dark */
+                            card: '#1e261a',    /* Military Panel Green */
+                            border: '#32402b',  /* Tactical Frame Border */
+                            accent: '#2a3624',  /* Active Highlights */
+                            text: '#d1fae5',    /* Terminal Crisp Text */
+                            lime: '#a3e635',    /* Tactical Bright Lime */
+                            amber: '#d97706'    /* Muted Ordnance Amber */
                         }
                     },
                     fontFamily: {
@@ -50,41 +44,19 @@
     <style>
         /* CRT Scanline & Tactical Overlay Effects */
         .crt-overlay {
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background: linear-gradient(rgba(18, 20, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(80, 120, 40, 0.03), rgba(0, 255, 100, 0.01), rgba(0, 50, 0, 0.03));
             background-size: 100% 3px, 6px 100%;
             pointer-events: none;
         }
 
-        .bg-white {
-            background: #ffffff;
+        .glow-lime {
+            text-shadow: 0 0 8px rgba(163, 230, 53, 0.6), 0 0 15px rgba(163, 230, 53, 0.3);
         }
-
-        .text-lime {
-            color: #00ff00;
-        }
-
-        .text-red {
-            color: #ff0000;
-        }
-
         .glow-amber {
-            text-shadow: 0 0 8px rgba(245, 159, 11, 0.733), 0 0 15px rgba(238, 233, 224, 0.3);
+            text-shadow: 0 0 8px rgba(217, 119, 6, 0.7), 0 0 15px rgba(217, 119, 6, 0.3);
         }
-
-        .glow-green {
-            text-shadow: 0 0 8px rgba(0, 255, 102, 0.6), 0 0 15px rgba(0, 255, 102, 0.3);
-        }
-
-        .glow-cyan {
-            text-shadow: 0 0 8px rgba(0, 243, 255, 0.6), 0 0 15px rgba(0, 243, 255, 0.3);
-        }
-
-        .box-glow-amber {
-            box-shadow: 0 0 15px -3px rgba(245, 158, 11, 0.25), inset 0 0 10px -5px rgba(245, 158, 11, 0.2);
-        }
-
-        .box-glow-cyan {
-            box-shadow: 0 0 15px -3px rgba(0, 243, 255, 0.25), inset 0 0 10px -5px rgba(0, 243, 255, 0.2);
+        .box-glow-lime {
+            box-shadow: 0 0 15px -3px rgba(163, 230, 53, 0.25), inset 0 0 10px -5px rgba(163, 230, 53, 0.2);
         }
 
         /* Custom Scrollbar Styles */
@@ -93,14 +65,14 @@
             height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #0a0d14;
+            background: #141a12;
         }
         ::-webkit-scrollbar-thumb {
-            background: #1e293b;
+            background: #32402b;
             border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #f59e0b;
+            background: #a3e635;
         }
 
         /* LED Pulse Animations */
@@ -114,218 +86,303 @@
 
         /* Custom Range Slider Accent */
         input[type=range] {
-            accent-color: #ff0000;
+            accent-color: #a3e635;
         }
     </style>
-</head></center>
-<center><body class="bg-crt-bg text-slate-200 font-sans min-h-screen relative overflow-x-hidden select-none">
+</head>
+<body class="bg-tactical-bg text-slate-200 font-sans min-h-screen relative overflow-x-hidden select-none flex flex-col items-center justify-start p-2 sm:p-4">
 
     <!-- CRT Overlay Layer -->
     <div class="fixed inset-0 crt-overlay z-50 opacity-50 pointer-events-none"></div>
 
-    <header class="border-b border-crt-border bg-crt-card/90 backdrop-blur sticky top-0 z-40 px-4 py-2.5">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-            
-            <!-- Operator Callsign & Station Info -->
-            <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
-                <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400">
-                        <i class="fa-solid font-mono text-xl fa-tower-cell"></i>
-                    </div>
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <h1 class="font-display font-black text-2xl tracking-wider text-amber-400 glow-amber">KR4NQN</h1>
-                            <span class="px-2 py-0.5 text-xs font-mono font-semibold rounded bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-emerald-400 led-active inline-block"></span>
-                                ON AIR
-                            </span>
-                        </div>
-                        <p class="text-xs font-mono text-slate-400">BEVERLY HILLS, FL // GRID: EL88 // QTH ACTIVE</p>
-                    </div>
-                </div>
+    <!-- Centered Main Dashboard Frame -->
+    <div class="w-full max-w-7xl mx-auto border border-tactical-border rounded-xl bg-tactical-card/60 shadow-2xl backdrop-blur overflow-hidden my-auto">
 
-
-            <!-- Clocks & Gauges -->
-            <div class="flex items-center justify-around md:justify-end w-full md:w-auto gap-4 font-mono text-xs border-t md:border-t-0 border-slate-800 pt-2 md:pt-0">
-                <!-- Local Clock -->
-                <div class="text-center px-3 py-1 bg-slate-900/80 rounded border border-slate-800">
-                    <div class="text-slate-400 text-[10px] uppercase tracking-wider">Local (EDT)</div>
-                    <div id="clock-local" class="text-slate-200 font-bold text-sm">--:--:--</div>
-                </div>
-
-                <!-- UTC Clock -->
-                <div class="text-center px-4 py-1 bg-amber-500/10 rounded border border-amber-500/30 box-glow-amber">
-                    <div class="text-amber-400/80 text-[10px] uppercase font-bold tracking-widest">UTC Time</div>
-                    <div id="clock-utc" class="text-amber-400 font-bold text-base glow-amber">--:--:-- Z</div>
-                </div>
-
-                <!-- Solar Quick Tag -->
-                <div class="text-center px-3 py-1 bg-slate-900/80 rounded border border-slate-800">
-                    <div class="text-slate-400 text-[10px] uppercase tracking-wider">SFI Index</div>
-                    <div id="hdr-sfi" class="text-cyan-400 font-bold text-sm glow-cyan">162 SFU</div>
-                </div>
-
-                <!-- Master Audio Synthesizer Switch -->
-            </div>
-        </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 space-y-6">
-
-        <!-- ROW 1: Solar & Propagation + VFO / Rig Control -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-            <!-- Solar & HF Band Conditions (4 Cols) -->
-            <section class="lg:col-span-4 bg-crt-card border border-crt-border rounded-xl p-4 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-                        <h2 class="font-display text-sm font-semibold text-amber-400 tracking-wider flex items-center gap-2">
-                            <i class="fa-solid fa-sun text-amber-500"></i> SOLAR & PROPAGATION
-                        </h2>
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">NOAA LIVE DATA</span>
-                    </div>
-
-                    <!-- Solar Indices Metrics -->
-                    <div class="grid grid-cols-4 gap-2 mb-4 font-mono text-center">
-                        <div class="bg-slate-900/90 p-2 rounded border border-slate-800">
-                            <div class="text-[10px] text-slate-400">SFI</div>
-                            <div class="text-sm font-bold text-amber-400">162</div>
-                        </div>
-                        <div class="bg-slate-900/90 p-2 rounded border border-slate-800">
-                            <div class="text-[10px] text-slate-400">A-IND</div>
-                            <div class="text-sm font-bold text-emerald-400">8</div>
-                        </div>
-                        <div class="bg-slate-900/90 p-2 rounded border border-slate-800">
-                            <div class="text-[10px] text-slate-400">K-IND</div>
-                            <div class="text-sm font-bold text-emerald-400">2 (Quiet)</div>
-                        </div>
-                        <div class="bg-slate-900/90 p-2 rounded border border-slate-800">
-                            <div class="text-[10px] text-slate-400">SUNSPOTS</div>
-                            <div class="text-sm font-bold text-cyan-400">114</div>
-                        </div>
-                    </div>
-
-                    <!-- Propagation Matrix Grid -->
-                    <div class="space-y-1.5 font-mono text-xs">
-                        <div class="grid grid-cols-3 px-2 py-1 text-[10px] text-slate-400 uppercase font-semibold border-b border-slate-800">
-                            <span>Band</span>
-                            <span>Day Status</span>
-                            <span>Night Status</span>
-                        </div>
-                        
-                        <div class="grid grid-cols-3 px-2 py-1 bg-slate-900/50 rounded items-center">
-                            <span class="font-bold text-slate-300">80m - 40m</span>
-                            <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Good</span>
-                            <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Good</span>
-                        </div>
-                        <div class="grid grid-cols-3 px-2 py-1 bg-slate-900/50 rounded items-center">
-                            <span class="font-bold text-slate-300">30m - 20m</span>
-                            <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Good</span>
-                            <span class="text-amber-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Fair</span>
-                        </div>
-                        <div class="grid grid-cols-3 px-2 py-1 bg-slate-900/50 rounded items-center">
-                            <span class="font-bold text-slate-300">17m - 15m</span>
-                            <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Good</span>
-                            <span class="text-red-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Poor</span>
-                        </div>
-                        <div class="grid grid-cols-3 px-2 py-1 bg-slate-900/50 rounded items-center">
-                            <span class="font-bold text-slate-300">12m - 10m</span>
-                            <span class="text-amber-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Fair</span>
-                            <span class="text-red-500 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Closed</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Geomagnetic Status -->
-                <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center text-xs font-mono">
-                    <span class="text-slate-400">NOISE FLOOR: <strong class="text-slate-200">S1-S2 (Low)</strong></span>
-                    <span class="text-slate-400">GEOMAGNETIC: <strong class="text-emerald-400">QUIET</strong></span>
-                </div>
-            </section>
-
-            
-            <!-- Grid Square & Azimuth Calculator (4 Cols) -->
-            <section class="lg:col-span-4 bg-crt-card border border-crt-border rounded-xl p-4 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-                        <h2 class="font-display text-sm font-semibold text-amber-400 tracking-wider flex items-center gap-2">
-                            <i class="fa-solid fa-compass text-amber-500"></i> BEARING & GRID CALCULATOR
-                        </h2>
-                    </div>
-
-                    <p class="text-xs text-slate-400 font-mono mb-4">
-                        Calculate direct beam heading (Azimuth) & distance from QTH (EL88).
-                    </p>
-
-                    <div class="space-y-3 font-mono text-xs">
-                        <div>
-                            <label class="block text-slate-400 mb-1">TARGET GRID OR CALL:</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="target-grid-input" placeholder="e.g. FN31 or JA1" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-amber-400 font-bold focus:outline-none focus:border-amber-500 uppercase">
-                                <button id="calc-bearing-btn" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded">
-                                    CALC
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="bg-slate-900/90 p-4 rounded-lg border border-slate-800 space-y-3 mt-4">
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                                <span class="text-slate-400">BEAM HEADING:</span>
-                                <span id="res-bearing" class="text-lg font-bold text-amber-400 glow-amber">045° (NE)</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                                <span class="text-slate-400">DISTANCE (MI):</span>
-                                <span id="res-dist-mi" class="text-sm font-bold text-slate-200">985 mi</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                                <span class="text-slate-400">DISTANCE (KM):</span>
-                                <span id="res-dist-km" class="text-sm font-bold text-slate-200">1,585 km</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-400">ANTENNA:</span>
-                                <span id="res-rotor-stat" class="text-xs font-bold text-emerald-400">ALIGNED</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 flex justify-center items-center py-2">
-                    <div class="relative w-24 h-24 rounded-full border-2 border-slate-700 flex items-center justify-center bg-slate-950">
-                        <div class="absolute text-[9px] font-mono text-slate-500 top-1">N</div>
-                        <div class="absolute text-[9px] font-mono text-slate-500 bottom-1">S</div>
-                        <div class="absolute text-[9px] font-mono text-slate-500 left-1">W</div>
-                        <div class="absolute text-[9px] font-mono text-slate-500 right-1">E</div>
-                        <div id="compass-needle" class="w-1 h-16 bg-gradient-to-t from-slate-600 to-amber-500 rounded transition-transform duration-500 transform rotate-45"></div>
-                    </div>
-                </div>
-            </section>
-          </div>
-
-        <!-- ROW 3: QRZ LOGBOOK WIDGET & INTEGRATED MULTI-LOG SYSTEM -->
-        <section class="  relative">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between pb-3 border-b border-slate-800 gap-3 mb-4">
+        <!-- Header -->
+        <header class="border-b border-tactical-border bg-tactical-card/90 px-4 py-3">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                 
-
-            <!-- Tab 1: Option B - QRZ Widget iFrame -->
-            <div id="tab-content-qrz-widget" class="log-tab-content block">
-                <div class="bg-slate-600/90 border border-slate-800 px-3 py-2 font-mono text-[11px] text-slate-400 flex flex-wrap justify-between items-center gap-2 mb-2 rounded-t">
-                    <span class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 led-active"></span>
-                        <span>KR4NQN: <strong class="text-amber-400">QRZ Logbook</strong></span>
-                    </span>
+                <!-- Operator Callsign & Station Info -->
+                <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-tactical-lime/10 border border-tactical-lime/30 rounded-lg text-tactical-lime">
+                            <i class="fa-solid text-xl fa-tower-cell"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h1 class="font-display font-black text-2xl tracking-wider text-tactical-lime glow-lime">KR4NQN</h1>
+                                <span class="px-2 py-0.5 text-xs font-mono font-semibold rounded bg-lime-950 text-tactical-lime border border-tactical-lime/40 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-tactical-lime led-active inline-block"></span>
+                                    ON AIR
+                                </span>
+                            </div>
+                            <p class="text-xs font-mono text-slate-400">BEVERLY HILLS, FL // GRID: EL88sv // QTH ACTIVE</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="relative w-full rounded-b-lg border border-slate-800 bg-white overflow-hidden" style="min-height: 400px;">
-                    <iframe align="top" frameborder="0" height="500" scrolling="yes" src="https://logbook.qrz.com/lbstat/KR4NQN/" width="800"></iframe>
+                <!-- Clocks & Station Gauges -->
+                <div class="flex items-center justify-around md:justify-end w-full md:w-auto gap-3 sm:gap-4 font-mono text-xs border-t md:border-t-0 border-tactical-border pt-2 md:pt-0">
+                    
+                    <div class="text-center px-10 py-3 bg-black text-white rounded border border-tactical-lime/30 box-glow-lime">
+                        <a href="index.html">HOME</a>
+                    </div>
+                    <!-- Local Clock -->
+                    <div class="text-center px-3 py-1 bg-tactical-bg/80 rounded border border-tactical-border">
+                        <div class="text-slate-400 text-[10px] uppercase tracking-wider">Local (EDT)</div>
+                        <div id="clock-local" class="text-slate-200 font-bold text-sm">--:--:--</div>
+                    </div>
+                    <!-- UTC Clock -->
+                    <div class="text-center px-4 py-1 bg-tactical-lime/10 rounded border border-tactical-lime/30 box-glow-lime">
+                        <div class="text-tactical-lime/80 text-[10px] uppercase font-bold tracking-widest">UTC Time</div>
+                        <div id="clock-utc" class="text-tactical-lime font-bold text-base glow-lime">--:--:-- Z</div>
+                    </div>
+                    
+                </div>
+            </div>
+        </header>
+
+        <main class="p-4 sm:p-6 space-y-6">
+
+            <!-- ROW 1: Solar & Propagation + Grid Calculator -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- Solar & HF Band Conditions (6 Cols) -->
+                <section class="lg:col-span-6 bg-tactical-bg/60 border border-tactical-border rounded-xl p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 border-b border-tactical-border mb-3">
+                            <h2 class="font-display text-sm font-semibold text-tactical-lime tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-sun text-tactical-lime"></i> SOLAR & PROPAGATION
+                            </h2>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-tactical-lime/20 text-tactical-lime border border-tactical-lime/30">NOAA LIVE DATA</span>
+                        </div>
+
+                        <!-- Solar Indices Metrics -->
+                        <div class="grid grid-cols-4 gap-2 mb-4 font-mono text-center">
+                            <div class="bg-tactical-card p-2 rounded border border-tactical-border">
+                                <div class="text-[10px] text-slate-400">SFI</div>
+                                <div class="text-sm font-bold text-tactical-lime">162</div>
+                            </div>
+                            <div class="bg-tactical-card p-2 rounded border border-tactical-border">
+                                <div class="text-[10px] text-slate-400">A-IND</div>
+                                <div class="text-sm font-bold text-emerald-400">8</div>
+                            </div>
+                            <div class="bg-tactical-card p-2 rounded border border-tactical-border">
+                                <div class="text-[10px] text-slate-400">K-IND</div>
+                                <div class="text-sm font-bold text-emerald-400">2 (Quiet)</div>
+                            </div>
+                            <div class="bg-tactical-card p-2 rounded border border-tactical-border">
+                                <div class="text-[10px] text-slate-400">SUNSPOTS</div>
+                                <div class="text-sm font-bold text-amber-500">114</div>
+                            </div>
+                        </div>
+
+                        <!-- Propagation Matrix Grid -->
+                        <div class="space-y-1.5 font-mono text-xs">
+                            <div class="grid grid-cols-3 px-2 py-1 text-[10px] text-slate-400 uppercase font-semibold border-b border-tactical-border">
+                                <span>Band</span>
+                                <span>Day Status</span>
+                                <span>Night Status</span>
+                            </div>
+                            <div class="grid grid-cols-3 px-2 py-1 bg-tactical-card/50 rounded items-center">
+                                <span class="font-bold text-slate-300">80m - 40m</span>
+                                <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Good</span>
+                                <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Good</span>
+                            </div>
+                            <div class="grid grid-cols-3 px-2 py-1 bg-tactical-card/50 rounded items-center">
+                                <span class="font-bold text-slate-300">30m - 20m</span>
+                                <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Good</span>
+                                <span class="text-amber-500 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Fair</span>
+                            </div>
+                            <div class="grid grid-cols-3 px-2 py-1 bg-tactical-card/50 rounded items-center">
+                                <span class="font-bold text-slate-300">17m - 15m</span>
+                                <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Good</span>
+                                <span class="text-red-400 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Poor</span>
+                            </div>
+                            <div class="grid grid-cols-3 px-2 py-1 bg-tactical-card/50 rounded items-center">
+                                <span class="font-bold text-slate-300">12m - 10m</span>
+                                <span class="text-amber-500 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Fair</span>
+                                <span class="text-red-500 font-semibold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Closed</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Geomagnetic Status -->
+                    <div class="mt-4 pt-3 border-t border-tactical-border flex justify-between items-center text-xs font-mono">
+                        <span class="text-slate-400">NOISE FLOOR: <strong class="text-slate-200">S1-S2 (Low)</strong></span>
+                        <span class="text-slate-400">GEOMAGNETIC: <strong class="text-emerald-400">QUIET</strong></span>
+                    </div>
+                </section>
+
+                <!-- Grid Square & Azimuth Calculator (6 Cols) -->
+                <section class="lg:col-span-6 bg-tactical-bg/60 border border-tactical-border rounded-xl p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 border-b border-tactical-border mb-3">
+                            <h2 class="font-display text-sm font-semibold text-tactical-lime tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-compass text-tactical-lime"></i> BEARING & GRID CALCULATOR
+                            </h2>
+                        </div>
+                        <p class="text-xs text-slate-400 font-mono mb-4">
+                            Calculate direct beam heading (Azimuth) & distance from QTH (EL88sv).
+                        </p>
+                        <div class="space-y-3 font-mono text-xs">
+                            <div>
+                                <label class="block text-slate-400 mb-1">TARGET GRID OR CALL:</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="target-grid-input" placeholder="e.g. FN31 or JA1" class="w-full bg-tactical-card border border-tactical-border rounded px-3 py-2 text-tactical-lime font-bold focus:outline-none focus:border-tactical-lime uppercase">
+                                    <button id="calc-bearing-btn" class="px-4 py-2 bg-tactical-lime hover:bg-lime-500 text-tactical-bg font-bold rounded transition-colors">
+                                        CALC
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-tactical-card p-4 rounded-lg border border-tactical-border space-y-3 mt-4">
+                                <div class="flex justify-between items-center border-b border-tactical-border pb-2">
+                                    <span class="text-slate-400">BEAM HEADING:</span>
+                                    <span id="res-bearing" class="text-lg font-bold text-tactical-lime glow-lime">045° (NE)</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-tactical-border pb-2">
+                                    <span class="text-slate-400">DISTANCE (MI):</span>
+                                    <span id="res-dist-mi" class="text-sm font-bold text-slate-200">985 mi</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-tactical-border pb-2">
+                                    <span class="text-slate-400">DISTANCE (KM):</span>
+                                    <span id="res-dist-km" class="text-sm font-bold text-slate-200">1,585 km</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-400">ANTENNA ROTOR:</span>
+                                    <span id="res-rotor-stat" class="text-xs font-bold text-emerald-400">ALIGNED</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-center items-center py-2">
+                        <div class="relative w-24 h-24 rounded-full border-2 border-tactical-border flex items-center justify-center bg-tactical-card">
+                            <div class="absolute text-[9px] font-mono text-slate-500 top-1">N</div>
+                            <div class="absolute text-[9px] font-mono text-slate-500 bottom-1">S</div>
+                            <div class="absolute text-[9px] font-mono text-slate-500 left-1">W</div>
+                            <div class="absolute text-[9px] font-mono text-slate-500 right-1">E</div>
+                            <div id="compass-needle" class="w-1 h-16 bg-gradient-to-t from-slate-600 to-tactical-lime rounded transition-transform duration-500 transform rotate-45"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ROW 2: LIVE REAL-TIME DAY/NIGHT & GRAYLINE MAP (OPTION 2 LIVE EMBEDS) -->
+            <section class="bg-tactical-bg/60 border border-tactical-border rounded-xl p-4 sm:p-5">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between pb-3 border-b border-tactical-border gap-3 mb-4">
+                    <div class="flex items-center gap-2">
+                        <h2 class="font-display text-base font-bold text-tactical-lime tracking-wider flex items-center gap-2 glow-lime">
+                            <i class="fa-solid fa-earth-americas text-tactical-lime"></i> LIVE REAL-TIME DAY/NIGHT & GRAYLINE MAP
+                        </h2>
+                        <span class="px-2 py-0.5 text-[10px] font-mono bg-tactical-lime/20 text-tactical-lime border border-tactical-lime/30 rounded flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-tactical-lime led-active"></span>
+                            LIVE SOLAR EMBED
+                        </span>
+                    </div>
+
+                    <!-- Map Controls & Auto-Refresh Controls -->
+                    <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+                        <!-- View Toggle Buttons -->
+                        <div class="flex bg-tactical-card p-1 rounded border border-tactical-border">
+                            <button id="map-btn-fourmilab" class="map-toggle-btn px-2.5 py-1 rounded bg-tactical-lime text-tactical-bg font-bold transition-all">
+                                FOURMILAB MERCATOR
+                            </button>
+                            <button id="map-btn-timeanddate" class="map-toggle-btn px-2.5 py-1 rounded text-slate-400 hover:text-slate-200 transition-all">
+                                SUN MAP VIEW
+                            </button>
+                            <button id="map-btn-noaa" class="map-toggle-btn px-2.5 py-1 rounded text-slate-400 hover:text-slate-200 transition-all">
+                                NOAA GOES SATELLITE
+                            </button>
+                        </div>
+
+                        <!-- Manual Refresh & Refresh Interval Indicator -->
+                        <div class="flex items-center gap-2 bg-tactical-card px-3 py-1.5 rounded border border-tactical-border">
+                            <span class="text-slate-400 text-[11px]">REFRESH:</span>
+                            <span id="auto-refresh-timer" class="text-tactical-lime font-bold">60s</span>
+                            <button id="btn-force-refresh-map" title="Force Cache-Bust Map Refresh" class="ml-1 text-slate-300 hover:text-tactical-lime transition-colors">
+                                <i class="fa-solid fa-rotate text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- Live Map Views Container -->
+                <div class="relative w-full rounded-lg border border-tactical-border bg-black/80 overflow-hidden flex justify-center items-center min-h-[360px] sm:min-h-[460px]">
+                    
+                    <!-- View B: TimeAndDate Dynamic Sun Map Embed -->
+                    <div id="view-timeanddate" class="map-view-panel w-full h-full hidden p-2">
+                        <iframe id="timeanddate-frame" 
+                                src="https://www.timeanddate.com/scripts/sunmap.php" 
+                                class="w-full h-[450px] rounded border border-tactical-border" 
+                                frameborder="0" 
+                                scrolling="no"></iframe>
+                        <div class="w-full flex justify-between items-center text-[11px] font-mono text-slate-400 mt-2 px-2">
+                            <span><i class="fa-solid fa-circle-info text-tactical-lime mr-1"></i> TimeAndDate Interactive Solar Position & Day/Night Boundary Overlay.</span>
+                            <span>Live Script Stream</span>
+                        </div>
+                    </div>
 
-    <!-- Footer -->
-    <footer class="border-t border-crt-border bg-crt-card/80 py-4 mt-8 font-mono text-xs text-center text-red">
-        <p>KR4NQN COMMAND DASHBOARD // AMATEUR RADIO STATION OPERATING SYSTEM</p>
-        <p class="text-[10px] text-lime mt-1">73 KR4NQN // BEVERLY HILLS, FL // GRID EL88sv</p>
-    </footer>
+                    <!-- View C: NOAA GOES Satellite / Solar Imagery -->
+                    <div id="view-noaa" class="map-view-panel w-full h-full hidden p-2 flex flex-col items-center justify-center">
+                        <img id="noaa-goes-img" 
+                             src="https://radar.weather.gov/ridge/standard/SOUTHEAST_loop.gif" 
+                             alt="NOAA Southeast US Live Radar Loop" 
+                             class="w-full max-h-[450px] object-contain rounded border border-tactical-border shadow-lg">
+                        <div class="w-full flex justify-between items-center text-[11px] font-mono text-slate-400 mt-2 px-2">
+                            <span><i class="fa-solid fa-cloud-bolt text-amber-500 mr-1"></i> NOAA NWS Live Regional Doppler Radar & Atmospheric Composite.</span>
+                            <span id="noaa-last-updated">Loop Auto-Active</span>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Solar & QTH Telemetry Bar -->
+                <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
+                    <div class="bg-tactical-card p-2.5 rounded border border-tactical-border flex justify-between items-center">
+                        <span class="text-slate-400">QTH POSITION:</span>
+                        <span class="text-tactical-lime font-bold">28.91° N, 82.46° W</span>
+                    </div>
+                    <div class="bg-tactical-card p-2.5 rounded border border-tactical-border flex justify-between items-center">
+                        <span class="text-slate-400">SUN DECLINATION:</span>
+                        <span id="sun-declination" class="text-amber-500 font-bold">+0.42° (Equinox)</span>
+                    </div>
+                    <div class="bg-tactical-card p-2.5 rounded border border-tactical-border flex justify-between items-center">
+                        <span class="text-slate-400">GRAYLINE STATUS:</span>
+                        <span class="text-emerald-400 font-bold">OPTIMAL HF HF PROP</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ROW 3: QRZ LOGBOOK & STATION FEED -->
+            <section class="bg-tactical-bg/60 border border-tactical-border rounded-xl p-4">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between pb-3 border-b border-tactical-border gap-3 mb-4">
+                    <h2 class="font-display text-sm font-semibold text-tactical-lime tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-book text-tactical-lime"></i> QRZ LOGBOOK & STATION FEED
+                    </h2>
+                </div>
+
+                <!-- QRZ Widget iFrame View Centered -->
+                <div id="tab-content-qrz-widget" class="log-tab-content block">
+                    <div class="bg-tactical-card border border-tactical-border px-3 py-2 font-mono text-[11px] text-slate-400 flex flex-wrap justify-between items-center gap-2 mb-2 rounded-t">
+                        <span class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-tactical-lime led-active"></span>
+                            <span>KR4NQN: <strong class="text-tactical-lime">QRZ Logbook Widget</strong></span>
+                        </span>
+                    </div>
+                    <div class="relative w-full rounded-b-lg bg-amber-100 border border-tactical-border overflow-hidden flex justify-center items-center p-2" style="min-height: 400px";>
+                        <iframe align="top" frameborder="0" height="500" scrolling="yes" src="https://logbook.qrz.com/lbstat/KR4NQN/" class="w-full max-w-4x rounded border border-tactical-border"></iframe>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-tactical-border bg-tactical-card/90 py-4 font-mono text-xs text-center text-slate-400">
+            <p class="text-red-900 font-bold">KR4NQN COMMAND DASHBOARD // AMATEUR RADIO STATION OPERATING SYSTEM</p>
+            <p class="text-[20px] text-white mt">73 KR4NQN // BEVERLY HILLS, FL // GRID EL88sv</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
     <script>
         // --- Web Audio Synthesizer Engine ---
         let audioCtx = null;
@@ -337,7 +394,7 @@
                 const btnIcon = document.getElementById('master-audio-icon');
                 if (btnText && btnIcon) {
                     btnText.innerText = 'Audio On';
-                    btnIcon.className = 'fa-solid fa-volume-high text-emerald-400';
+                    btnIcon.className = 'fa-solid fa-volume-high text-tactical-lime';
                 }
             }
             if (audioCtx.state === 'suspended') {
@@ -345,30 +402,34 @@
             }
         }
 
-        document.getElementById('master-audio-toggle')?.addEventListener('click', initAudio);
-        document.getElementById('mobile-audio-btn')?.addEventListener('click', initAudio);
+        document.getElementById('master-audio-toggle')?.addEventListener('click', () => {
+            initAudio();
+            playBeep(900, 0.05);
+        });
 
         function playBeep(freq = 700, duration = 0.1) {
-            initAudio();
             if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
 
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
 
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
 
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {
+                console.error("Audio beep error", e);
+            }
         }
 
-        // --- Clocks ---
+        // --- Live Clocks Update ---
         function updateClocks() {
             const now = new Date();
             document.getElementById('clock-utc').innerText = now.toISOString().substring(11, 19) + ' Z';
@@ -377,433 +438,85 @@
         setInterval(updateClocks, 1000);
         updateClocks();
 
-        // --- Logbook Tab Switching Logic ---
-        document.querySelectorAll('.log-tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const targetTab = e.target.getAttribute('data-tab');
-                
-                // Update Button Styles
-                document.querySelectorAll('.log-tab-btn').forEach(b => {
-                    b.classList.remove('bg-amber-500', 'text-slate-950', 'font-bold');
-                    b.classList.add('text-slate-400');
-                });
-                e.target.classList.add('bg-amber-500', 'text-slate-950', 'font-bold');
-                e.target.classList.remove('text-slate-400');
+        // --- Option 2 Live Map Switching & Auto-Refresh Logic ---
+        const mapBtnFourmilab = document.getElementById('map-btn-fourmilab');
+        const mapBtnTimeAndDate = document.getElementById('map-btn-timeanddate');
+        const mapBtnNoaa = document.getElementById('map-btn-noaa');
 
-                // Toggle Tab View
-                document.querySelectorAll('.log-tab-content').forEach(content => {
-                    content.classList.add('hidden');
-                    content.classList.remove('block');
-                });
-                const selectedContent = document.getElementById(`tab-content-${targetTab}`);
-                if (selectedContent) {
-                    selectedContent.classList.remove('hidden');
-                    selectedContent.classList.add('block');
-                }
-                playBeep(850, 0.03);
+        const viewFourmilab = document.getElementById('view-fourmilab');
+        const viewTimeAndDate = document.getElementById('view-timeanddate');
+        const viewNoaa = document.getElementById('view-noaa');
+
+        function setMapActive(btn, viewPanel) {
+            playBeep(800, 0.03);
+            [mapBtnFourmilab, mapBtnTimeAndDate, mapBtnNoaa].forEach(b => {
+                b.classList.remove('bg-tactical-lime', 'text-tactical-bg', 'font-bold');
+                b.classList.add('text-slate-400');
             });
-        });
+            btn.classList.add('bg-tactical-lime', 'text-tactical-bg', 'font-bold');
+            btn.classList.remove('text-slate-400');
 
-        // Refresh QRZ Widget Frame
-        document.getElementById('refresh-qrz-widget')?.addEventListener('click', () => {
-            const iframe = document.getElementById('qrz-widget-iframe');
-            if (iframe) {
-                iframe.src = 'https://logbook.qrz.com/lbwidget?call=KR4NQN&t=' + new Date().getTime();
-                playBeep(900, 0.05);
-            }
-        });
-
-        // Setup Modal Helper Triggers
-        const qrzHelpBtn = document.getElementById('qrz-help-btn');
-        const qrzHelpModal = document.getElementById('qrz-help-modal');
-        const closeQrzModal = document.getElementById('close-qrz-modal');
-        const closeQrzModalBtn = document.getElementById('close-qrz-modal-btn');
-
-        qrzHelpBtn?.addEventListener('click', () => qrzHelpModal.classList.remove('hidden'));
-        closeQrzModal?.addEventListener('click', () => qrzHelpModal.classList.add('hidden'));
-        closeQrzModalBtn?.addEventListener('click', () => qrzHelpModal.classList.add('hidden'));
-
-        // --- Local Logbook State & Operations ---
-        let localQsoLog = [
-            { date: '2026-09-20 18:30', call: 'W1AW', band: '20m', mode: 'FT8', rstS: '-02', rstR: '-08', grid: 'FN31' },
-            { date: '2026-09-20 19:15', call: 'K3LR', band: '40m', mode: 'CW', rstS: '599', rstR: '599', grid: 'EN91' },
-            { date: '2026-09-20 20:05', call: 'JA1ZLO', band: '15m', mode: 'FT8', rstS: '-12', rstR: '-15', grid: 'PM95' }
-        ];
-
-        function renderLocalQsoTable() {
-            const tbody = document.getElementById('qso-table-body');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            localQsoLog.forEach((qso, index) => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-900/60 text-slate-300';
-                tr.innerHTML = `
-                    <td class="p-2.5 text-slate-400">${qso.date}</td>
-                    <td class="p-2.5 font-bold text-amber-400">${qso.call}</td>
-                    <td class="p-2.5 text-cyan-400">${qso.band}</td>
-                    <td class="p-2.5 text-emerald-400">${qso.mode}</td>
-                    <td class="p-2.5">${qso.rstS} / ${qso.rstR}</td>
-                    <td class="p-2.5 text-slate-400">${qso.grid || 'EL88'}</td>
-                    <td class="p-2.5 text-right">
-                        <button onclick="deleteQso(${index})" class="text-red-400 hover:text-red-300 p-1">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            const qsoCountEl = document.getElementById('qso-count');
-            if (qsoCountEl) {
-                qsoCountEl.innerText = localQsoLog.length;
-            }
+            [viewFourmilab, viewTimeAndDate, viewNoaa].forEach(p => p.classList.add('hidden'));
+            viewPanel.classList.remove('hidden');
         }
 
-        document.getElementById('btn-add-qso')?.addEventListener('click', () => {
-            const call = document.getElementById('log-call').value.trim().toUpperCase();
-            if (!call) return;
+        mapBtnFourmilab?.addEventListener('click', () => setMapActive(mapBtnFourmilab, viewFourmilab));
+        mapBtnTimeAndDate?.addEventListener('click', () => setMapActive(mapBtnTimeAndDate, viewTimeAndDate));
+        mapBtnNoaa?.addEventListener('click', () => setMapActive(mapBtnNoaa, viewNoaa));
 
-            const now = new Date().toISOString().replace('T', ' ').substring(0, 16);
-            localQsoLog.unshift({
-                date: now,
-                call: call,
-                band: document.getElementById('log-band').value,
-                mode: document.getElementById('log-mode').value,
-                rstS: document.getElementById('log-rst-s').value,
-                rstR: document.getElementById('log-rst-r').value,
-                grid: 'EL88'
-            });
+        // --- Auto-Refresh Cache Buster for Map Images ---
+        let refreshSecondsLeft = 60;
 
-            document.getElementById('log-call').value = '';
-            renderLocalQsoTable();
+        function refreshMapImages() {
+            const timestamp = new Date().getTime();
+            
+            // Refresh Fourmilab Map Image
+            const fourmilabImg = document.getElementById('fourmilab-img');
+            if (fourmilabImg) {
+                fourmilabImg.src = `https://www.fourmilab.ch/cgi-bin/Earth?img=learth.evif&imgmode=1&eye=0&rect=1&t=${timestamp}`;
+                document.getElementById('fourmilab-last-updated').innerText = `Updated: ${new Date().toLocaleTimeString()}`;
+            }
+
+            // Refresh NOAA Radar Image
+            const noaaImg = document.getElementById('noaa-goes-img');
+            if (noaaImg) {
+                noaaImg.src = `https://radar.weather.gov/ridge/standard/SOUTHEAST_loop.gif?t=${timestamp}`;
+                document.getElementById('noaa-last-updated').innerText = `Updated: ${new Date().toLocaleTimeString()}`;
+            }
+
+            refreshSecondsLeft = 60;
+        }
+
+        // Countdown Timer Interval
+        setInterval(() => {
+            refreshSecondsLeft--;
+            const timerEl = document.getElementById('auto-refresh-timer');
+            if (timerEl) {
+                timerEl.innerText = `${refreshSecondsLeft}s`;
+            }
+
+            if (refreshSecondsLeft <= 0) {
+                refreshMapImages();
+            }
+        }, 1000);
+
+        // Force Manual Refresh Button Trigger
+        document.getElementById('btn-force-refresh-map')?.addEventListener('click', () => {
             playBeep(950, 0.05);
+            refreshMapImages();
         });
 
-        window.deleteQso = function(index) {
-            localQsoLog.splice(index, 1);
-            renderLocalQsoTable();
-        };
-
-        // Export Log Files
-        document.getElementById('export-csv-btn')?.addEventListener('click', () => {
-            let csv = "Date,Call,Band,Mode,RST_Sent,RST_Rcvd\n";
-            localQsoLog.forEach(q => {
-                csv += `"${q.date}","${q.call}","${q.band}","${q.mode}","${q.rstS}","${q.rstR}"\n`;
-            });
-            downloadFile(csv, 'KR4NQN_Logbook.csv', 'text/csv');
-        });
-
-        document.getElementById('export-adif-btn')?.addEventListener('click', () => {
-            let adif = "KR4NQN Dashboard ADIF Export\n<EOH>\n";
-            localQsoLog.forEach(q => {
-                const dateClean = q.date.split(' ')[0].replace(/-/g, '');
-                const timeClean = q.date.split(' ')[1].replace(':', '') + '00';
-                adif += `<CALL:${q.call.length}>${q.call} <BAND:${q.band.length}>${q.band} <MODE:${q.mode.length}>${q.mode} <QSO_DATE:${dateClean.length}>${dateClean} <TIME_ON:${timeClean.length}>${timeClean} <RST_SENT:${q.rstS.length}>${q.rstS} <RST_RCVD:${q.rstR.length}>${q.rstR} <EOR>\n`;
-            });
-            downloadFile(adif, 'KR4NQN_Logbook.adi', 'text/plain');
-        });
-
-        function downloadFile(content, fileName, mimeType) {
-            const blob = new Blob([content], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        renderLocalQsoTable();
-
-        // --- VFO & Rig Control ---
-        let currentFreqHz = 14074000;
-
-        function formatFreq(hz) {
-            const mhz = (hz / 1000000).toFixed(6);
-            const parts = mhz.split('.');
-            return `${parts[0]}.${parts[1].substring(0,3)}.${parts[1].substring(3,6)}`;
-        }
-
-        function updateVfoDisplay() {
-            document.getElementById('vfo-display').innerText = formatFreq(currentFreqHz);
-        }
-
-        document.querySelectorAll('.band-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                currentFreqHz = parseInt(e.target.getAttribute('data-freq'));
-                document.querySelectorAll('.band-btn').forEach(b => {
-                    b.classList.remove('bg-amber-500/20', 'text-amber-300', 'border-amber-500/40', 'font-bold');
-                    b.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
-                });
-                e.target.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
-                e.target.classList.add('bg-amber-500/20', 'text-amber-300', 'border-amber-500/40', 'font-bold');
-                updateVfoDisplay();
-                playBeep(800, 0.05);
-            });
-        });
-
-        document.querySelectorAll('.mode-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.mode-btn').forEach(b => {
-                    b.classList.remove('bg-amber-500', 'text-slate-950', 'font-bold');
-                    b.classList.add('bg-slate-800', 'text-slate-300');
-                });
-                e.target.classList.remove('bg-slate-800', 'text-slate-300');
-                e.target.classList.add('bg-amber-500', 'text-slate-950', 'font-bold');
-                playBeep(900, 0.05);
-            });
-        });
-
-        document.getElementById('vfo-up')?.addEventListener('click', () => {
-            currentFreqHz += 1000;
-            updateVfoDisplay();
-            playBeep(1000, 0.02);
-        });
-
-        document.getElementById('vfo-down')?.addEventListener('click', () => {
-            currentFreqHz = Math.max(100000, currentFreqHz - 1000);
-            updateVfoDisplay();
-            playBeep(600, 0.02);
-        });
-
-        // S-Meter Bar Generation
-        const smeterBarsContainer = document.getElementById('smeter-bars');
-        if (smeterBarsContainer) {
-            for (let i = 1; i <= 15; i++) {
-                const bar = document.createElement('div');
-                bar.className = `flex-1 h-full rounded-xs transition-opacity duration-150 ${i <= 9 ? 'bg-emerald-500' : 'bg-red-500'} ${i <= 8 ? 'opacity-90' : 'opacity-20'}`;
-                smeterBarsContainer.appendChild(bar);
-            }
-        }
-
-        // Audio Waterfall Animation
-        const waterfallCanvas = document.getElementById('waterfall-canvas');
-        if (waterfallCanvas) {
-            const wfCtx = waterfallCanvas.getContext('2d');
-            function resizeWaterfall() {
-                waterfallCanvas.width = waterfallCanvas.parentElement.clientWidth;
-                waterfallCanvas.height = waterfallCanvas.parentElement.clientHeight;
-            }
-            window.addEventListener('resize', resizeWaterfall);
-            resizeWaterfall();
-
-            function drawWaterfall() {
-                wfCtx.fillStyle = 'rgba(10, 13, 20, 0.2)';
-                wfCtx.fillRect(0, 0, waterfallCanvas.width, waterfallCanvas.height);
-
-                wfCtx.beginPath();
-                wfCtx.strokeStyle = '#00f3ff';
-                wfCtx.lineWidth = 1.5;
-
-                const width = waterfallCanvas.width;
-                const height = waterfallCanvas.height;
-                const sliceWidth = width / 50;
-                let x = 0;
-
-                for (let i = 0; i < 50; i++) {
-                    const noise = Math.random() * (i % 7 === 0 ? 30 : 10);
-                    const y = height - (noise + 10);
-                    if (i === 0) wfCtx.moveTo(x, y);
-                    else wfCtx.lineTo(x, y);
-                    x += sliceWidth;
-                }
-                wfCtx.stroke();
-                requestAnimationFrame(drawWaterfall);
-            }
-            drawWaterfall();
-        }
-
-        // --- DX World Map & Grayline ---
-        const mapCanvas = document.getElementById('world-map-canvas');
-        if (mapCanvas) {
-            const mapCtx = mapCanvas.getContext('2d');
-            function resizeMap() {
-                mapCanvas.width = mapCanvas.parentElement.clientWidth;
-                mapCanvas.height = mapCanvas.parentElement.clientHeight;
-                drawMap();
-            }
-            window.addEventListener('resize', resizeMap);
-
-            const dxSpots = [
-                { call: 'JA1ZLO', freq: '14.074', mode: 'FT8', lat: 35.6, lng: 139.6 },
-                { call: 'VK3DAB', freq: '21.074', mode: 'FT8', lat: -37.8, lng: 144.9 },
-                { call: 'G4BWP', freq: '7.030', mode: 'CW', lat: 51.5, lng: -0.12 }
-            ];
-
-            function latLngToXY(lat, lng, w, h) {
-                return {
-                    x: (lng + 180) * (w / 360),
-                    y: (90 - lat) * (h / 180)
-                };
-            }
-
-            function drawMap() {
-                const w = mapCanvas.width;
-                const h = mapCanvas.height;
-
-                mapCtx.fillStyle = '#0a0e17';
-                mapCtx.fillRect(0, 0, w, h);
-
-                mapCtx.strokeStyle = '#1e293b';
-                mapCtx.lineWidth = 0.5;
-                for (let x = 0; x < w; x += w / 12) {
-                    mapCtx.beginPath(); mapCtx.moveTo(x, 0); mapCtx.lineTo(x, h); mapCtx.stroke();
-                }
-
-                // Simplified continents
-                mapCtx.fillStyle = '#111827';
-                mapCtx.fillRect(w * 0.1, h * 0.15, w * 0.25, h * 0.35);
-                mapCtx.fillRect(w * 0.45, h * 0.15, w * 0.2, h * 0.7);
-                mapCtx.fillRect(w * 0.68, h * 0.15, w * 0.25, h * 0.4);
-
-                // Home QTH Spot
-                const qth = latLngToXY(28.9, -82.5, w, h);
-                mapCtx.fillStyle = '#f59e0b';
-                mapCtx.beginPath();
-                mapCtx.arc(qth.x, qth.y, 5, 0, Math.PI * 2);
-                mapCtx.fill();
-
-                // DX Pins
-                dxSpots.forEach(spot => {
-                    const pos = latLngToXY(spot.lat, spot.lng, w, h);
-                    mapCtx.fillStyle = '#00f3ff';
-                    mapCtx.beginPath();
-                    mapCtx.arc(pos.x, pos.y, 4, 0, Math.PI * 2);
-                    mapCtx.fill();
-                });
-            }
-            setTimeout(resizeMap, 100);
-        }
-
-        // --- Bearing & Distance Calculator ---
+        // --- Azimuth & Distance Bearing Calculation Event ---
         document.getElementById('calc-bearing-btn')?.addEventListener('click', () => {
-            document.getElementById('res-bearing').innerText = '045° (NE)';
-            document.getElementById('compass-needle').style.transform = 'rotate(45deg)';
-            playBeep(850, 0.1);
-        });
-
-        // --- CW Morse Keyer Engine ---
-        const morseMap = {
-            'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
-            'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
-            'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
-            'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
-            'Y': '-.--', 'Z': '--..', '1': '.----', '2': '..---', '3': '...--',
-            '4': '....-', '5': '.....', '6': '-....', '7': '--...', '8': '---..',
-            '9': '----.', '0': '-----', ' ': '  '
-        };
-
-        function textToMorse(text) {
-            return text.toUpperCase().split('').map(c => morseMap[c] || c).join(' ');
-        }
-
-        document.getElementById('cw-gen-call')?.addEventListener('click', () => {
-            const calls = ['W1AW', 'K3LR', 'N6AR', 'VE3EJ', 'ZF1A'];
-            const call = calls[Math.floor(Math.random() * calls.length)];
-            const txt = `CQ CQ DE ${call} K`;
-            document.getElementById('cw-text-buffer').innerText = txt;
-            document.getElementById('cw-morse-output').innerText = textToMorse(txt);
-        });
-
-        document.getElementById('cw-play-btn')?.addEventListener('click', () => {
-            initAudio();
-            const morse = document.getElementById('cw-morse-output').innerText;
-            const wpm = parseInt(document.getElementById('wpm-slider').value);
-            const unitTime = 1.2 / wpm;
-            let timeOffset = audioCtx.currentTime + 0.1;
-
-            morse.split('').forEach(char => {
-                if (char === '.') {
-                    playToneAt(700, timeOffset, unitTime);
-                    timeOffset += unitTime * 2;
-                } else if (char === '-') {
-                    playToneAt(700, timeOffset, unitTime * 3);
-                    timeOffset += unitTime * 4;
-                } else if (char === ' ') {
-                    timeOffset += unitTime * 2;
-                }
-            });
-        });
-
-        function playToneAt(freq, startTime, duration) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, startTime);
-            gain.gain.setValueAtTime(0, startTime);
-            gain.gain.linearRampToValueAtTime(0.15, startTime + 0.005);
-            gain.gain.setValueAtTime(0.15, startTime + duration - 0.005);
-            gain.gain.linearRampToValueAtTime(0, startTime + duration);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start(startTime);
-            osc.stop(startTime + duration);
-        }
-
-        document.getElementById('cw-paddle-dit')?.addEventListener('mousedown', () => playBeep(700, 0.06));
-        document.getElementById('cw-paddle-dah')?.addEventListener('mousedown', () => playBeep(700, 0.18));
-
-        document.getElementById('wpm-slider')?.addEventListener('input', (e) => {
-            document.getElementById('wpm-display').innerText = e.target.value;
+            playBeep(850, 0.05);
+            const input = document.getElementById('target-grid-input').value.trim();
+            if (input) {
+                document.getElementById('res-bearing').innerText = '052° (ENE)';
+                document.getElementById('res-dist-mi').innerText = '1,240 mi';
+                document.getElementById('res-dist-km').innerText = '1,995 km';
+                document.getElementById('compass-needle').style.transform = 'rotate(52deg)';
+            }
         });
     </script>
-    <script>
-    // Tune main VFO from external modules (e.g. DX Cluster)
-function tuneVfo(freqHz) {
-    if (typeof currentFreqHz !== 'undefined') {
-        currentFreqHz = freqHz;
-        if (typeof updateVfoDisplay === 'function') {
-            updateVfoDisplay();
-        }
-    }
-    if (typeof playBeep === 'function') {
-        playBeep(1000, 0.08);
-    }
-}
-
-// Simple CW Text Synthesizer
-function playCwText() {
-    const text = document.getElementById('cw-text-input')?.value.toUpperCase() || '';
-    if (!text) return;
-
-    const wpm = parseInt(document.getElementById('wpm-val')?.innerText || '20');
-    const pitch = parseInt(document.getElementById('pitch-val')?.innerText || '700');
-    const dotLen = 1.2 / wpm; // dot duration in seconds
-
-    const morseCode = {
-        'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
-        'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
-        'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
-        'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
-        'Y': '-.--', 'Z': '--..', '1': '.----', '2': '..---', '3': '...--',
-        '4': '....-', '5': '.....', '6': '-....', '7': '--...', '8': '---..',
-        '9': '----.', '0': '-----', ' ': ' '
-    };
-
-    let delay = 0;
-    for (let char of text) {
-        const code = morseCode[char];
-        if (!code) continue;
-
-        if (code === ' ') {
-            delay += dotLen * 7;
-            continue;
-        }
-
-        for (let symbol of code) {
-            const duration = symbol === '.' ? dotLen : dotLen * 3;
-            setTimeout(() => {
-                if (typeof playBeep === 'function') {
-                    playBeep(pitch, duration);
-                }
-            }, delay * 1000);
-            delay += duration + dotLen;
-        }
-        delay += dotLen * 3;
-    }
-}</script>
-</body></center>
+</body>
 </html>
